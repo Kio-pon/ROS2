@@ -1,0 +1,25 @@
+# =============================================================================
+#  NVIDIA GPU override
+# =============================================================================
+#  Use this ON TOP of docker-compose.yml when the host has an NVIDIA GPU and
+#  the NVIDIA Container Toolkit is installed:
+#
+#     docker compose -f docker-compose.yml -f docker-compose.nvidia.yml up -d
+#     docker compose -f docker-compose.yml -f docker-compose.nvidia.yml exec drone-sim ~/launchers/run_all.sh
+#
+#  Verify the toolkit first:
+#     docker run --rm --gpus all nvidia/cuda:12.4.0-base-ubuntu22.04 nvidia-smi
+#
+#  This reserves the GPU and lets the driver inject the GL/EGL stack (the
+#  NVIDIA_* capability hints are already baked into the image).
+# =============================================================================
+
+services:
+  drone-sim:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

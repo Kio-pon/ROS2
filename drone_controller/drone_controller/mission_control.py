@@ -283,7 +283,7 @@ class MissionControlNode(Node):
         if self.camera_sub is not None:
             return
         for name, types in self.get_topic_names_and_types():
-            if "sensor_msgs/msg/Image" in types:
+            if "sensor_msgs/msg/Image" in types and "depth" not in name.lower():
                 self.camera_topic = name
                 self._log(f"Auto-detected camera topic: {name}")
                 self.camera_sub = self.create_subscription(
@@ -907,7 +907,17 @@ class MissionControlApp:
             return
             
         n = self.node
-        if n and n.latest_frame and _HAVE_PIL:
+        # Distinguish failure modes so it's obvious WHICH part is missing
+        # (this is the cross-machine "blank feed" diagnostic).
+        if not _HAVE_PIL:
+            self.cam_lbl.config(text="Install python3-pil.imagetk", fg=WARN)
+        elif n is None:
+            self.cam_lbl.config(text="Starting...", fg=MUTED)
+        elif n.camera_topic is None:
+            self.cam_lbl.config(text="No camera topic - is the image bridge running?", fg=WARN)
+        elif n.latest_frame is None:
+            self.cam_lbl.config(text="Topic found, no frames yet (GPU/render?)", fg=WARN)
+        else:
             frame_data = n.get_latest_frame_rgb()
             if frame_data:
                 w, h, rgb = frame_data
@@ -915,18 +925,15 @@ class MissionControlApp:
                 target_w = 320
                 target_h = int(h * (target_w / w))
                 img = img.resize((target_w, target_h))
-                
+
                 self.cam_canvas.config(height=target_h)
                 self._photo_image = ImageTk.PhotoImage(img)
-                self.cam_canvas.create_image(target_w//2, target_h//2, anchor="center", image=self._photo_image)
+                self.cam_canvas.create_image(target_w // 2, target_h // 2,
+                                             anchor="center", image=self._photo_image)
                 self.cam_lbl.config(text=f"Live ({w}x{h})", fg=OK)
             else:
                 self.cam_lbl.config(text="Unsupported encoding", fg=WARN)
-        elif not _HAVE_PIL:
-            self.cam_lbl.config(text="Missing python3-pil.imagetk", fg=WARN)
-        else:
-            self.cam_lbl.config(text="No frames received", fg=WARN)
-            
+
         self.root.after(33, self._update_camera_frame)
 
     def _build_qgc(self, parent):

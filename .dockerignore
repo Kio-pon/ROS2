@@ -39,5 +39,13 @@ Thumbs.db
 # Docker files themselves
 Dockerfile
 docker-compose.yml
+docker-compose.nvidia.yml
 .dockerignore
+.env
 README_DOCKER.md
+
+# Runtime bind-mount folders (populated on the host, not baked into the image)
+custom_models/
+custom_worlds/
+custom_airframes/
+missions/

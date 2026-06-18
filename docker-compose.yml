@@ -1,13 +1,23 @@
-# ╔══════════════════════════════════════════════════════════════════════╗
-# ║   PX4 + ROS 2 Jazzy Drone Simulator — Docker Compose              ║
-# ║                                                                    ║
-# ║   Usage:                                                           ║
-# ║     docker compose up -d          # start the container            ║
-# ║     docker compose down           # stop everything                ║
-# ║     docker compose build          # rebuild after code changes     ║
-# ║                                                                    ║
-# ║   Desktop:  http://localhost:6080/vnc.html                         ║
-# ╚══════════════════════════════════════════════════════════════════════╝
+# =============================================================================
+#  PX4 + ROS 2 Jazzy + Gazebo Harmonic — NATIVE-display drone simulator
+# =============================================================================
+#  GUI windows (Gazebo, Mission Control, rviz) render on YOUR screen — no
+#  browser, no VNC. Real GPU acceleration via the host driver.
+#
+#  Quick start (Linux host):
+#     xhost +local:root                              # allow the container to use your X server (once per login)
+#     UID=$(id -u) GID=$(id -g) docker compose build # first build compiles PX4 (~10-20 min)
+#     docker compose up -d
+#     docker compose exec drone-sim ~/launchers/run_all.sh
+#
+#  NVIDIA GPU? Add the override so it gets full acceleration:
+#     docker compose -f docker-compose.yml -f docker-compose.nvidia.yml up -d
+#
+#  Headless (CI / automated tests, no screen):
+#     docker compose run --rm -e HEADLESS=1 drone-sim ~/launchers/run_headless_drone.sh
+#
+#  Defaults (UID/GID, PX4 commit, drone model…) live in .env — edit there.
+# =============================================================================
 
 services:
   drone-sim:
@@ -15,78 +25,57 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        # Pin PX4 version — change to "main" for bleeding edge
-        PX4_VERSION: v1.15.4
-        # Parallel compile jobs (lower = safer on low-RAM machines)
-        JOBS: 2
-    container_name: px4-drone-sim
+        PX4_REF: ${PX4_REF:-183b3e38d5}
+        PX4MSGS_REF: ${PX4MSGS_REF:-64775a2}
+        JOBS: ${BUILD_JOBS:-4}
+        USER_UID: ${UID:-1000}
+        USER_GID: ${GID:-1000}
     image: px4-drone-sim:latest
+    container_name: px4-drone-sim
 
-    # ── Networking ────────────────────────────────────────────────────
-    ports:
-      - "6080:6080"   # noVNC web UI  → http://localhost:6080/vnc.html
-      - "5900:5900"   # Direct VNC    → for native VNC clients
-
-    # ── Environment (override drone model/world at launch time) ──────
-    environment:
-      - DISPLAY=:1
-      # ┌──────────────────────────────────────────────────────────────┐
-      # │  DRONE CONFIGURATION — change these to switch airframes!    │
-      # │                                                             │
-      # │  Standard x500 (no camera):                                 │
-      # │    PX4_SYS_AUTOSTART=4001                                   │
-      # │    PX4_SIM_MODEL=gz_x500                                    │
-      # │                                                             │
-      # │  x500 with mono camera (default):                           │
-      # │    PX4_SYS_AUTOSTART=4010                                   │
-      # │    PX4_SIM_MODEL=gz_x500_mono_cam                           │
-      # │                                                             │
-      # │  x500 with depth camera:                                    │
-      # │    PX4_SYS_AUTOSTART=4011                                   │
-      # │    PX4_SIM_MODEL=gz_x500_depth                              │
-      # │                                                             │
-      # │  Standard VTOL:                                             │
-      # │    PX4_SYS_AUTOSTART=4003                                   │
-      # │    PX4_SIM_MODEL=gz_standard_vtol                           │
-      # └──────────────────────────────────────────────────────────────┘
-      - PX4_SYS_AUTOSTART=4010
-      - PX4_SIM_MODEL=gz_x500_mono_cam
-      - PX4_GZ_WORLD=lawn
-      # Desktop resolution (WIDTHxHEIGHTxDEPTH)
-      - SCREEN_RES=1920x1080x24
-
-    # ── Volume mounts ────────────────────────────────────────────────
-    volumes:
-      # Live-edit your Python code from the host — changes appear
-      # instantly inside the container (rebuild with colcon after edits)
-      - ./drone_controller:/home/student/px4_ros2_ws/src/drone_controller
-
-      # ── EXTENSIBILITY MOUNT POINTS ─────────────────────────────────
-      # Drop custom Gazebo SDF models here and they become available
-      # to Gazebo inside the container automatically.
-      - ./custom_models:/home/student/custom_models
-
-      # Drop custom Gazebo world files (.sdf) here
-      - ./custom_worlds:/home/student/custom_worlds
-
-      # Drop custom PX4 airframe init files here
-      - ./custom_airframes:/home/student/custom_airframes
-
-      # Save/load mission JSON files from the Mission Control GUI
-      - ./missions:/home/student/missions
-
-    # ── Container behaviour ──────────────────────────────────────────
-    # IPC host lets DDS/ROS 2 share memory efficiently
+    # Host networking = zero-config ROS 2 DDS discovery, Gazebo transport,
+    # and the XRCE-DDS UDP link. IPC host = fast shared-memory for DDS.
+    network_mode: host
     ipc: host
-    # Required for PX4 process management (pkill, etc.)
-    privileged: true
+    init: true            # reap the many child processes PX4/Gazebo spawn
+
+    environment:
+      # --- Native display ---------------------------------------------------
+      - DISPLAY=${DISPLAY:-:0}
+      - QT_X11_NO_MITSHM=1
+      - XDG_RUNTIME_DIR=/tmp/runtime-student
+      # Set HEADLESS=1 to run Gazebo with no GUI (automated testing).
+      - HEADLESS=${HEADLESS:-}
+      # --- ROS 2 ------------------------------------------------------------
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      # --- DRONE / WORLD SELECTION (change the airframe here) ---------------
+      #   x500 + mono camera (default) : 4010 / gz_x500_mono_cam
+      #   plain x500 (no camera)       : 4001 / gz_x500
+      #   x500 + depth camera          : 4002 / gz_x500_depth
+      #   x500 + gimbal camera         : 4019 / gz_x500_gimbal
+      #   standard VTOL                : 4004 / gz_standard_vtol
+      - PX4_SYS_AUTOSTART=${PX4_SYS_AUTOSTART:-4010}
+      - PX4_SIM_MODEL=${PX4_SIM_MODEL:-gz_x500_mono_cam}
+      - PX4_GZ_WORLD=${PX4_GZ_WORLD:-lawn}
+
+    volumes:
+      # Native X11 socket — this is what puts windows on your screen.
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Live-edit your code on the host; rebuild with colcon inside the container.
+      - ./drone_controller:/home/student/px4_ros2_ws/src/drone_controller
+      # --- Extensibility: drop assets here, no rebuild needed ---------------
+      - ./custom_models:/home/student/custom_models       # custom Gazebo SDF models
+      - ./custom_worlds:/home/student/custom_worlds       # custom .sdf worlds
+      - ./custom_airframes:/home/student/custom_airframes  # custom PX4 airframe configs
+      - ./missions:/home/student/missions                  # saved Mission Control plans (JSON)
+
+    # Intel/AMD GPU + software rendering go through /dev/dri.
+    # (NVIDIA uses the toolkit instead — see docker-compose.nvidia.yml.)
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
+
     stdin_open: true
     tty: true
-
-    # ── Resource limits (prevents runaway Gazebo from eating all RAM) ─
-    deploy:
-      resources:
-        limits:
-          memory: 8G
-        reservations:
-          memory: 4G

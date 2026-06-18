@@ -22,14 +22,14 @@ sleep 1
 echo "Starting DDS Agent..."
 MicroXRCEAgent udp4 -p 8888 > ~/dds_agent.log 2>&1 &
 
-# 2. Camera-equipped airframe (4010 = gz_x500_mono_cam)
-export PX4_SYS_AUTOSTART=4010
-export PX4_SIM_MODEL=gz_x500_mono_cam
-export PX4_GZ_WORLD=lawn
+# 2. Aircraft / world — honour environment overrides (set by docker-compose
+#    or your shell); fall back to the camera-equipped x500 (airframe 4010).
+export PX4_SYS_AUTOSTART="${PX4_SYS_AUTOSTART:-4010}"
+export PX4_SIM_MODEL="${PX4_SIM_MODEL:-gz_x500_mono_cam}"
+export PX4_GZ_WORLD="${PX4_GZ_WORLD:-lawn}"
 export GZ_CONFIG_PATH="/usr/share/gz:${GZ_CONFIG_PATH:-}"
-# export HEADLESS=1
-unset HEADLESS
 unset PX4_GZ_MODEL_NAME
+# HEADLESS is left untouched: export HEADLESS=1 for a no-GUI Gazebo run.
 
 # 3. Launch PX4 SITL + Gazebo
 echo "Launching PX4 SITL + Gazebo with a camera drone..."
@@ -72,9 +72,21 @@ fi
 echo "Camera topic: $CAM_TOPIC"
 
 # 8. Bridge the Gazebo camera into ROS 2
-echo "Starting ros_gz image bridge..."
+if ! ros2 pkg prefix ros_gz_image >/dev/null 2>&1; then
+    echo "ERROR: ros_gz_image is NOT installed - the live camera feed will be blank."
+    echo "       Install it:  sudo apt install ros-jazzy-ros-gz-image"
+    echo "       (In the Docker image this is preinstalled, so this should not happen there.)"
+fi
+echo "Starting ros_gz image bridge on $CAM_TOPIC ..."
 ros2 run ros_gz_image image_bridge "$CAM_TOPIC" > ~/image_bridge.log 2>&1 &
-sleep 2
+sleep 3
+# Confirm the camera actually reached ROS 2 (catches the cross-machine blank-feed issue)
+if ros2 topic list 2>/dev/null | grep -qF "$CAM_TOPIC"; then
+    echo "OK: camera is live in ROS 2 -> $CAM_TOPIC"
+else
+    echo "WARN: camera topic not visible in ROS 2 yet. See ~/image_bridge.log."
+    echo "      The Mission Control GUI will keep retrying and show the reason in the camera panel."
+fi
 
 # 9. Run the Mission Control GUI
 echo "Starting Mission Control GUI..."
