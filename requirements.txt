@@ -1,0 +1,5 @@
+# Python dependencies for ROS 2 PX4 Drone Controller
+# Note: Core ROS 2 libraries (rclpy, sensor_msgs, etc.) must be installed via apt.
+
+# PIL/Pillow for camera frame rendering in Tkinter Ground Station
+Pillow>=10.0.0
