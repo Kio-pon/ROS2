@@ -1,0 +1,92 @@
+# ╔══════════════════════════════════════════════════════════════════════╗
+# ║   PX4 + ROS 2 Jazzy Drone Simulator — Docker Compose              ║
+# ║                                                                    ║
+# ║   Usage:                                                           ║
+# ║     docker compose up -d          # start the container            ║
+# ║     docker compose down           # stop everything                ║
+# ║     docker compose build          # rebuild after code changes     ║
+# ║                                                                    ║
+# ║   Desktop:  http://localhost:6080/vnc.html                         ║
+# ╚══════════════════════════════════════════════════════════════════════╝
+
+services:
+  drone-sim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Pin PX4 version — change to "main" for bleeding edge
+        PX4_VERSION: v1.15.4
+        # Parallel compile jobs (lower = safer on low-RAM machines)
+        JOBS: 2
+    container_name: px4-drone-sim
+    image: px4-drone-sim:latest
+
+    # ── Networking ────────────────────────────────────────────────────
+    ports:
+      - "6080:6080"   # noVNC web UI  → http://localhost:6080/vnc.html
+      - "5900:5900"   # Direct VNC    → for native VNC clients
+
+    # ── Environment (override drone model/world at launch time) ──────
+    environment:
+      - DISPLAY=:1
+      # ┌──────────────────────────────────────────────────────────────┐
+      # │  DRONE CONFIGURATION — change these to switch airframes!    │
+      # │                                                             │
+      # │  Standard x500 (no camera):                                 │
+      # │    PX4_SYS_AUTOSTART=4001                                   │
+      # │    PX4_SIM_MODEL=gz_x500                                    │
+      # │                                                             │
+      # │  x500 with mono camera (default):                           │
+      # │    PX4_SYS_AUTOSTART=4010                                   │
+      # │    PX4_SIM_MODEL=gz_x500_mono_cam                           │
+      # │                                                             │
+      # │  x500 with depth camera:                                    │
+      # │    PX4_SYS_AUTOSTART=4011                                   │
+      # │    PX4_SIM_MODEL=gz_x500_depth                              │
+      # │                                                             │
+      # │  Standard VTOL:                                             │
+      # │    PX4_SYS_AUTOSTART=4003                                   │
+      # │    PX4_SIM_MODEL=gz_standard_vtol                           │
+      # └──────────────────────────────────────────────────────────────┘
+      - PX4_SYS_AUTOSTART=4010
+      - PX4_SIM_MODEL=gz_x500_mono_cam
+      - PX4_GZ_WORLD=lawn
+      # Desktop resolution (WIDTHxHEIGHTxDEPTH)
+      - SCREEN_RES=1920x1080x24
+
+    # ── Volume mounts ────────────────────────────────────────────────
+    volumes:
+      # Live-edit your Python code from the host — changes appear
+      # instantly inside the container (rebuild with colcon after edits)
+      - ./drone_controller:/home/student/px4_ros2_ws/src/drone_controller
+
+      # ── EXTENSIBILITY MOUNT POINTS ─────────────────────────────────
+      # Drop custom Gazebo SDF models here and they become available
+      # to Gazebo inside the container automatically.
+      - ./custom_models:/home/student/custom_models
+
+      # Drop custom Gazebo world files (.sdf) here
+      - ./custom_worlds:/home/student/custom_worlds
+
+      # Drop custom PX4 airframe init files here
+      - ./custom_airframes:/home/student/custom_airframes
+
+      # Save/load mission JSON files from the Mission Control GUI
+      - ./missions:/home/student/missions
+
+    # ── Container behaviour ──────────────────────────────────────────
+    # IPC host lets DDS/ROS 2 share memory efficiently
+    ipc: host
+    # Required for PX4 process management (pkill, etc.)
+    privileged: true
+    stdin_open: true
+    tty: true
+
+    # ── Resource limits (prevents runaway Gazebo from eating all RAM) ─
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G

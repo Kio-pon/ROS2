@@ -1,0 +1,43 @@
+# ── Docker build exclusions ──────────────────────────────────────────────
+# Keep the build context small and fast by excluding anything Docker
+# doesn't need to COPY into the image.
+
+# Git
+.git/
+.gitignore
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python caches
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ROS 2 build artifacts (we rebuild inside the container)
+build/
+install/
+log/
+
+# Logs
+*.log
+
+# Large reference files (not needed at runtime)
+ROS2.pdf
+*.pdf
+px4_ros2_jazzy_drone_guide.md
+ros2_crash_course_guide.md
+ros2_jazzy_study_guide.md
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
+.dockerignore
+README_DOCKER.md
