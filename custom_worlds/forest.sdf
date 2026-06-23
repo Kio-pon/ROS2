@@ -1,0 +1,223 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="forest">
+    <!-- no system plugins here: PX4 adds Physics/Sensors/etc via server.config -->
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397971</latitude_deg>
+      <longitude_deg>8.546164</longitude_deg>
+      <elevation>0</elevation>
+    </spherical_coordinates>
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 100 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.4 0.4 0.4 1</specular>
+      <direction>-0.4 0.3 -0.9</direction>
+    </light>
+    <include>
+      <uri>model://forest_terrain</uri>
+    </include>
+    <include>
+      <name>spruce_tree_0</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-21.938 20.846 0.000 0 0 4.799</pose>
+    </include>
+    <include>
+      <name>spruce_tree_1</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-14.696 -0.274 0.000 0 0 2.824</pose>
+    </include>
+    <include>
+      <name>spruce_tree_2</name>
+      <uri>model://spruce_tree</uri>
+      <pose>9.096 17.323 0.000 0 0 0.590</pose>
+    </include>
+    <include>
+      <name>spruce_tree_3</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-28.299 20.146 0.000 0 0 2.719</pose>
+    </include>
+    <include>
+      <name>spruce_tree_4</name>
+      <uri>model://spruce_tree</uri>
+      <pose>15.737 -29.874 0.000 0 0 2.798</pose>
+    </include>
+    <include>
+      <name>spruce_tree_5</name>
+      <uri>model://spruce_tree</uri>
+      <pose>13.292 -16.274 0.000 0 0 5.939</pose>
+    </include>
+    <include>
+      <name>spruce_tree_6</name>
+      <uri>model://spruce_tree</uri>
+      <pose>24.086 -28.165 0.000 0 0 0.160</pose>
+    </include>
+    <include>
+      <name>spruce_tree_7</name>
+      <uri>model://spruce_tree</uri>
+      <pose>2.485 26.349 0.000 0 0 2.395</pose>
+    </include>
+    <include>
+      <name>spruce_tree_8</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-17.004 -4.673 0.000 0 0 0.182</pose>
+    </include>
+    <include>
+      <name>spruce_tree_9</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-16.699 -3.727 0.000 0 0 3.115</pose>
+    </include>
+    <include>
+      <name>spruce_tree_10</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-16.015 -16.148 0.000 0 0 1.375</pose>
+    </include>
+    <include>
+      <name>spruce_tree_11</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-2.424 -12.613 0.000 0 0 0.135</pose>
+    </include>
+    <include>
+      <name>spruce_tree_12</name>
+      <uri>model://spruce_tree</uri>
+      <pose>20.255 3.387 0.000 0 0 4.036</pose>
+    </include>
+    <include>
+      <name>spruce_tree_13</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-18.846 29.553 0.000 0 0 5.403</pose>
+    </include>
+    <include>
+      <name>spruce_tree_14</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-22.747 -10.038 0.000 0 0 4.533</pose>
+    </include>
+    <include>
+      <name>spruce_tree_15</name>
+      <uri>model://spruce_tree</uri>
+      <pose>12.672 26.186 0.000 0 0 2.652</pose>
+    </include>
+    <include>
+      <name>spruce_tree_16</name>
+      <uri>model://spruce_tree</uri>
+      <pose>19.802 10.218 0.000 0 0 1.906</pose>
+    </include>
+    <include>
+      <name>spruce_tree_17</name>
+      <uri>model://spruce_tree</uri>
+      <pose>5.255 22.949 0.000 0 0 5.317</pose>
+    </include>
+    <include>
+      <name>spruce_tree_18</name>
+      <uri>model://spruce_tree</uri>
+      <pose>0.317 5.340 0.000 0 0 0.217</pose>
+    </include>
+    <include>
+      <name>spruce_tree_19</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-15.436 17.844 0.000 0 0 2.603</pose>
+    </include>
+    <include>
+      <name>spruce_tree_20</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-19.620 2.928 0.000 0 0 4.417</pose>
+    </include>
+    <include>
+      <name>spruce_tree_21</name>
+      <uri>model://spruce_tree</uri>
+      <pose>10.469 -7.518 0.000 0 0 2.758</pose>
+    </include>
+    <include>
+      <name>spruce_tree_22</name>
+      <uri>model://spruce_tree</uri>
+      <pose>0.506 16.707 0.000 0 0 3.273</pose>
+    </include>
+    <include>
+      <name>spruce_tree_23</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-6.405 -0.618 0.000 0 0 0.186</pose>
+    </include>
+    <include>
+      <name>spruce_tree_24</name>
+      <uri>model://spruce_tree</uri>
+      <pose>-27.391 12.203 0.000 0 0 6.178</pose>
+    </include>
+    <include>
+      <name>fir_tree_25</name>
+      <uri>model://fir_tree</uri>
+      <pose>27.362 26.870 0.000 0 0 0.355</pose>
+    </include>
+    <include>
+      <name>fir_tree_26</name>
+      <uri>model://fir_tree</uri>
+      <pose>-24.908 20.130 0.000 0 0 4.624</pose>
+    </include>
+    <include>
+      <name>fir_tree_27</name>
+      <uri>model://fir_tree</uri>
+      <pose>10.184 -11.512 0.000 0 0 3.807</pose>
+    </include>
+    <include>
+      <name>fir_tree_28</name>
+      <uri>model://fir_tree</uri>
+      <pose>6.408 4.872 0.000 0 0 0.995</pose>
+    </include>
+    <include>
+      <name>fir_tree_29</name>
+      <uri>model://fir_tree</uri>
+      <pose>-4.160 -6.388 0.000 0 0 4.543</pose>
+    </include>
+    <include>
+      <name>fir_tree_30</name>
+      <uri>model://fir_tree</uri>
+      <pose>29.689 26.964 0.000 0 0 3.419</pose>
+    </include>
+    <include>
+      <name>fir_tree_31</name>
+      <uri>model://fir_tree</uri>
+      <pose>-3.309 -13.906 0.000 0 0 0.226</pose>
+    </include>
+    <include>
+      <name>fir_tree_32</name>
+      <uri>model://fir_tree</uri>
+      <pose>-28.353 -2.106 0.000 0 0 2.001</pose>
+    </include>
+    <include>
+      <name>fir_tree_33</name>
+      <uri>model://fir_tree</uri>
+      <pose>-7.199 23.507 0.000 0 0 3.303</pose>
+    </include>
+    <include>
+      <name>fir_tree_34</name>
+      <uri>model://fir_tree</uri>
+      <pose>3.631 -15.833 0.000 0 0 0.150</pose>
+    </include>
+    <include>
+      <name>fir_tree_35</name>
+      <uri>model://fir_tree</uri>
+      <pose>-10.491 -21.798 0.000 0 0 3.206</pose>
+    </include>
+    <include>
+      <name>fir_tree_36</name>
+      <uri>model://fir_tree</uri>
+      <pose>29.921 10.469 0.000 0 0 1.143</pose>
+    </include>
+    <include>
+      <name>fir_tree_37</name>
+      <uri>model://fir_tree</uri>
+      <pose>23.614 17.806 0.000 0 0 4.614</pose>
+    </include>
+    <include>
+      <name>fir_tree_38</name>
+      <uri>model://fir_tree</uri>
+      <pose>24.396 15.773 0.000 0 0 4.962</pose>
+    </include>
+    <include>
+      <name>fir_tree_39</name>
+      <uri>model://fir_tree</uri>
+      <pose>-8.773 28.859 0.000 0 0 6.044</pose>
+    </include>
+  </world>
+</sdf>

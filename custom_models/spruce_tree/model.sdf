@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <model name="spruce_tree">
+    <static>true</static>
+    <link name="link">
+      <!-- glb node transforms already make this Z-up; no extra rotation (the
+           original file's -90deg pitch tipped it over). ~17 m tall as-is. -->
+      <visual name="visual">
+        <geometry>
+          <mesh><uri>model://spruce_tree/spruce_tree.glb</uri></mesh>
+        </geometry>
+      </visual>
+      <!-- ponytail: visual-only static scenery. Add a cylinder collision only if
+           the drone must physically collide with trees (obstacle-avoidance tests). -->
+    </link>
+  </model>
+</sdf>

@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <model name="fir_tree">
+    <static>true</static>
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <!-- fixed: original pointed at a non-existent mesh/fir_tree.glb -->
+          <mesh><uri>model://fir_tree/lhpine.glb</uri></mesh>
+        </geometry>
+      </visual>
+      <!-- ponytail: visual-only; the original collision mesh wasn't in the zip.
+           Add a cylinder collision if the drone must hit trees. -->
+    </link>
+  </model>
+</sdf>

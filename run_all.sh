@@ -31,6 +31,17 @@ export GZ_CONFIG_PATH="/usr/share/gz:${GZ_CONFIG_PATH:-}"
 unset PX4_GZ_MODEL_NAME
 # HEADLESS is left untouched: export HEADLESS=1 for a no-GUI Gazebo run.
 
+# 2b. Make custom scenery available (forest/farmland). Works both in Docker
+#     (~/custom_*) and native (alongside this script). PX4's gz_env.sh keeps
+#     whatever GZ_SIM_RESOURCE_PATH we set here, so model:// trees resolve.
+SELF_DIR="$(cd "$(dirname "$0")" 2>/dev/null && pwd)"
+for d in "$HOME/custom_models" "$SELF_DIR/custom_models"; do
+    [ -d "$d" ] && export GZ_SIM_RESOURCE_PATH="$d:${GZ_SIM_RESOURCE_PATH:-}"
+done
+for d in "$HOME/custom_worlds" "$SELF_DIR/custom_worlds"; do
+    [ -d "$d" ] && cp -u "$d"/*.sdf "$HOME/PX4-Autopilot/Tools/simulation/gz/worlds/" 2>/dev/null || true
+done
+
 # 3. Launch PX4 SITL + Gazebo
 echo "Launching PX4 SITL + Gazebo with a camera drone..."
 cd ~/PX4-Autopilot

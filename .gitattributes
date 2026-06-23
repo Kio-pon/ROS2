@@ -15,4 +15,6 @@ entrypoint.sh text eol=lf
 *.pdf       binary
 *.png       binary
 *.jpg       binary
+*.glb       binary
+*.tif       binary
 *.AppImage  binary
