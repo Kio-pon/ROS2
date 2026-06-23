@@ -26,7 +26,7 @@ MicroXRCEAgent udp4 -p 8888 > ~/dds_agent.log 2>&1 &
 #    or your shell); fall back to the camera-equipped x500 (airframe 4010).
 export PX4_SYS_AUTOSTART="${PX4_SYS_AUTOSTART:-4010}"
 export PX4_SIM_MODEL="${PX4_SIM_MODEL:-gz_x500_mono_cam}"
-export PX4_GZ_WORLD="${PX4_GZ_WORLD:-lawn}"
+export PX4_GZ_WORLD="${PX4_GZ_WORLD:-forest}"
 export GZ_CONFIG_PATH="/usr/share/gz:${GZ_CONFIG_PATH:-}"
 unset PX4_GZ_MODEL_NAME
 # HEADLESS is left untouched: export HEADLESS=1 for a no-GUI Gazebo run.
