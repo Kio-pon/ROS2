@@ -1,0 +1,301 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="row_crops">
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>16</iters>
+          <sor>1.3</sor>
+        </solver>
+      </ode>
+    </physics>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397971</latitude_deg>
+      <longitude_deg>8.546164</longitude_deg>
+      <elevation>0</elevation>
+    </spherical_coordinates>
+    <light type="directional" name="sun">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 100 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.4 0.4 0.4 1</specular>
+      <direction>-0.4 0.3 -0.9</direction>
+    </light>
+    <include>
+      <uri>model://soil_terrain</uri>
+    </include>
+
+    <!-- Mixed vegetable beds (chard / zucchini / artichoke), centre dirt path. z via place_on_terrain.py -->
+    <include><name>crop_chard_0</name><uri>model://crop_chard</uri><pose>-9.0 -6.0 0.694 0 0 0.00</pose></include>
+    <include><name>crop_chard_1</name><uri>model://crop_chard</uri><pose>-9.0 -5.4 0.706 0 0 0.70</pose></include>
+    <include><name>crop_chard_2</name><uri>model://crop_chard</uri><pose>-9.0 -4.8 0.714 0 0 1.40</pose></include>
+    <include><name>crop_chard_3</name><uri>model://crop_chard</uri><pose>-9.0 -4.2 0.718 0 0 2.10</pose></include>
+    <include><name>crop_chard_4</name><uri>model://crop_chard</uri><pose>-9.0 -3.6 0.718 0 0 2.80</pose></include>
+    <include><name>crop_chard_5</name><uri>model://crop_chard</uri><pose>-9.0 -3.0 0.718 0 0 3.50</pose></include>
+    <include><name>crop_chard_6</name><uri>model://crop_chard</uri><pose>-9.0 -2.4 0.706 0 0 4.20</pose></include>
+    <include><name>crop_chard_7</name><uri>model://crop_chard</uri><pose>-9.0 -1.8 0.690 0 0 4.90</pose></include>
+    <include><name>crop_chard_8</name><uri>model://crop_chard</uri><pose>-9.0 -1.2 0.690 0 0 5.60</pose></include>
+    <include><name>crop_chard_9</name><uri>model://crop_chard</uri><pose>-9.0 -0.6 0.675 0 0 0.02</pose></include>
+    <include><name>crop_chard_10</name><uri>model://crop_chard</uri><pose>-9.0 -0.0 0.651 0 0 0.72</pose></include>
+    <include><name>crop_chard_11</name><uri>model://crop_chard</uri><pose>-9.0 0.6 0.624 0 0 1.42</pose></include>
+    <include><name>crop_chard_12</name><uri>model://crop_chard</uri><pose>-9.0 1.2 0.584 0 0 2.12</pose></include>
+    <include><name>crop_chard_13</name><uri>model://crop_chard</uri><pose>-9.0 1.8 0.584 0 0 2.82</pose></include>
+    <include><name>crop_chard_14</name><uri>model://crop_chard</uri><pose>-9.0 2.4 0.549 0 0 3.52</pose></include>
+    <include><name>crop_chard_15</name><uri>model://crop_chard</uri><pose>-9.0 3.0 0.525 0 0 4.22</pose></include>
+    <include><name>crop_chard_16</name><uri>model://crop_chard</uri><pose>-9.0 3.6 0.510 0 0 4.92</pose></include>
+    <include><name>crop_chard_17</name><uri>model://crop_chard</uri><pose>-9.0 4.2 0.510 0 0 5.62</pose></include>
+    <include><name>crop_chard_18</name><uri>model://crop_chard</uri><pose>-9.0 4.8 0.502 0 0 0.04</pose></include>
+    <include><name>crop_chard_19</name><uri>model://crop_chard</uri><pose>-9.0 5.4 0.506 0 0 0.74</pose></include>
+    <include><name>crop_chard_20</name><uri>model://crop_chard</uri><pose>-9.0 6.0 0.522 0 0 1.44</pose></include>
+    <include><name>crop_chard_21</name><uri>model://crop_chard</uri><pose>-8.25 -6.0 0.690 0 0 2.14</pose></include>
+    <include><name>crop_chard_22</name><uri>model://crop_chard</uri><pose>-8.25 -5.4 0.698 0 0 2.84</pose></include>
+    <include><name>crop_chard_23</name><uri>model://crop_chard</uri><pose>-8.25 -4.8 0.714 0 0 3.54</pose></include>
+    <include><name>crop_chard_24</name><uri>model://crop_chard</uri><pose>-8.25 -4.2 0.722 0 0 4.24</pose></include>
+    <include><name>crop_chard_25</name><uri>model://crop_chard</uri><pose>-8.25 -3.6 0.722 0 0 4.94</pose></include>
+    <include><name>crop_chard_26</name><uri>model://crop_chard</uri><pose>-8.25 -3.0 0.722 0 0 5.64</pose></include>
+    <include><name>crop_chard_27</name><uri>model://crop_chard</uri><pose>-8.25 -2.4 0.714 0 0 0.06</pose></include>
+    <include><name>crop_chard_28</name><uri>model://crop_chard</uri><pose>-8.25 -1.8 0.698 0 0 0.76</pose></include>
+    <include><name>crop_chard_29</name><uri>model://crop_chard</uri><pose>-8.25 -1.2 0.698 0 0 1.46</pose></include>
+    <include><name>crop_chard_30</name><uri>model://crop_chard</uri><pose>-8.25 -0.6 0.686 0 0 2.16</pose></include>
+    <include><name>crop_chard_31</name><uri>model://crop_chard</uri><pose>-8.25 -0.0 0.667 0 0 2.86</pose></include>
+    <include><name>crop_chard_32</name><uri>model://crop_chard</uri><pose>-8.25 0.6 0.635 0 0 3.56</pose></include>
+    <include><name>crop_chard_33</name><uri>model://crop_chard</uri><pose>-8.25 1.2 0.596 0 0 4.26</pose></include>
+    <include><name>crop_chard_34</name><uri>model://crop_chard</uri><pose>-8.25 1.8 0.596 0 0 4.96</pose></include>
+    <include><name>crop_chard_35</name><uri>model://crop_chard</uri><pose>-8.25 2.4 0.553 0 0 5.66</pose></include>
+    <include><name>crop_chard_36</name><uri>model://crop_chard</uri><pose>-8.25 3.0 0.518 0 0 0.08</pose></include>
+    <include><name>crop_chard_37</name><uri>model://crop_chard</uri><pose>-8.25 3.6 0.494 0 0 0.78</pose></include>
+    <include><name>crop_chard_38</name><uri>model://crop_chard</uri><pose>-8.25 4.2 0.494 0 0 1.48</pose></include>
+    <include><name>crop_chard_39</name><uri>model://crop_chard</uri><pose>-8.25 4.8 0.482 0 0 2.18</pose></include>
+    <include><name>crop_chard_40</name><uri>model://crop_chard</uri><pose>-8.25 5.4 0.482 0 0 2.88</pose></include>
+    <include><name>crop_chard_41</name><uri>model://crop_chard</uri><pose>-8.25 6.0 0.494 0 0 3.58</pose></include>
+    <include><name>crop_chard_42</name><uri>model://crop_chard</uri><pose>-7.5 -6.0 0.694 0 0 4.28</pose></include>
+    <include><name>crop_chard_43</name><uri>model://crop_chard</uri><pose>-7.5 -5.4 0.702 0 0 4.98</pose></include>
+    <include><name>crop_chard_44</name><uri>model://crop_chard</uri><pose>-7.5 -4.8 0.714 0 0 5.68</pose></include>
+    <include><name>crop_chard_45</name><uri>model://crop_chard</uri><pose>-7.5 -4.2 0.718 0 0 0.10</pose></include>
+    <include><name>crop_chard_46</name><uri>model://crop_chard</uri><pose>-7.5 -3.6 0.718 0 0 0.80</pose></include>
+    <include><name>crop_chard_47</name><uri>model://crop_chard</uri><pose>-7.5 -3.0 0.718 0 0 1.50</pose></include>
+    <include><name>crop_chard_48</name><uri>model://crop_chard</uri><pose>-7.5 -2.4 0.710 0 0 2.20</pose></include>
+    <include><name>crop_chard_49</name><uri>model://crop_chard</uri><pose>-7.5 -1.8 0.698 0 0 2.90</pose></include>
+    <include><name>crop_chard_50</name><uri>model://crop_chard</uri><pose>-7.5 -1.2 0.698 0 0 3.60</pose></include>
+    <include><name>crop_chard_51</name><uri>model://crop_chard</uri><pose>-7.5 -0.6 0.690 0 0 4.30</pose></include>
+    <include><name>crop_chard_52</name><uri>model://crop_chard</uri><pose>-7.5 -0.0 0.675 0 0 5.00</pose></include>
+    <include><name>crop_chard_53</name><uri>model://crop_chard</uri><pose>-7.5 0.6 0.643 0 0 5.70</pose></include>
+    <include><name>crop_chard_54</name><uri>model://crop_chard</uri><pose>-7.5 1.2 0.604 0 0 0.12</pose></include>
+    <include><name>crop_chard_55</name><uri>model://crop_chard</uri><pose>-7.5 1.8 0.604 0 0 0.82</pose></include>
+    <include><name>crop_chard_56</name><uri>model://crop_chard</uri><pose>-7.5 2.4 0.553 0 0 1.52</pose></include>
+    <include><name>crop_chard_57</name><uri>model://crop_chard</uri><pose>-7.5 3.0 0.514 0 0 2.22</pose></include>
+    <include><name>crop_chard_58</name><uri>model://crop_chard</uri><pose>-7.5 3.6 0.486 0 0 2.92</pose></include>
+    <include><name>crop_chard_59</name><uri>model://crop_chard</uri><pose>-7.5 4.2 0.486 0 0 3.62</pose></include>
+    <include><name>crop_chard_60</name><uri>model://crop_chard</uri><pose>-7.5 4.8 0.471 0 0 4.32</pose></include>
+    <include><name>crop_chard_61</name><uri>model://crop_chard</uri><pose>-7.5 5.4 0.467 0 0 5.02</pose></include>
+    <include><name>crop_chard_62</name><uri>model://crop_chard</uri><pose>-7.5 6.0 0.475 0 0 5.72</pose></include>
+    <include><name>crop_chard_63</name><uri>model://crop_chard</uri><pose>-6.75 -6.0 0.710 0 0 0.14</pose></include>
+    <include><name>crop_chard_64</name><uri>model://crop_chard</uri><pose>-6.75 -5.4 0.714 0 0 0.84</pose></include>
+    <include><name>crop_chard_65</name><uri>model://crop_chard</uri><pose>-6.75 -4.8 0.718 0 0 1.54</pose></include>
+    <include><name>crop_chard_66</name><uri>model://crop_chard</uri><pose>-6.75 -4.2 0.714 0 0 2.24</pose></include>
+    <include><name>crop_chard_67</name><uri>model://crop_chard</uri><pose>-6.75 -3.6 0.714 0 0 2.94</pose></include>
+    <include><name>crop_chard_68</name><uri>model://crop_chard</uri><pose>-6.75 -3.0 0.706 0 0 3.64</pose></include>
+    <include><name>crop_chard_69</name><uri>model://crop_chard</uri><pose>-6.75 -2.4 0.694 0 0 4.34</pose></include>
+    <include><name>crop_chard_70</name><uri>model://crop_chard</uri><pose>-6.75 -1.8 0.690 0 0 5.04</pose></include>
+    <include><name>crop_chard_71</name><uri>model://crop_chard</uri><pose>-6.75 -1.2 0.690 0 0 5.74</pose></include>
+    <include><name>crop_chard_72</name><uri>model://crop_chard</uri><pose>-6.75 -0.6 0.686 0 0 0.16</pose></include>
+    <include><name>crop_chard_73</name><uri>model://crop_chard</uri><pose>-6.75 -0.0 0.675 0 0 0.86</pose></include>
+    <include><name>crop_chard_74</name><uri>model://crop_chard</uri><pose>-6.75 0.6 0.643 0 0 1.56</pose></include>
+    <include><name>crop_chard_75</name><uri>model://crop_chard</uri><pose>-6.75 1.2 0.604 0 0 2.26</pose></include>
+    <include><name>crop_chard_76</name><uri>model://crop_chard</uri><pose>-6.75 1.8 0.604 0 0 2.96</pose></include>
+    <include><name>crop_chard_77</name><uri>model://crop_chard</uri><pose>-6.75 2.4 0.553 0 0 3.66</pose></include>
+    <include><name>crop_chard_78</name><uri>model://crop_chard</uri><pose>-6.75 3.0 0.514 0 0 4.36</pose></include>
+    <include><name>crop_chard_79</name><uri>model://crop_chard</uri><pose>-6.75 3.6 0.486 0 0 5.06</pose></include>
+    <include><name>crop_chard_80</name><uri>model://crop_chard</uri><pose>-6.75 4.2 0.486 0 0 5.76</pose></include>
+    <include><name>crop_chard_81</name><uri>model://crop_chard</uri><pose>-6.75 4.8 0.471 0 0 0.18</pose></include>
+    <include><name>crop_chard_82</name><uri>model://crop_chard</uri><pose>-6.75 5.4 0.467 0 0 0.88</pose></include>
+    <include><name>crop_chard_83</name><uri>model://crop_chard</uri><pose>-6.75 6.0 0.471 0 0 1.58</pose></include>
+    <include><name>crop_chard_84</name><uri>model://crop_chard</uri><pose>-6.0 -6.0 0.714 0 0 2.28</pose></include>
+    <include><name>crop_chard_85</name><uri>model://crop_chard</uri><pose>-6.0 -5.4 0.714 0 0 2.98</pose></include>
+    <include><name>crop_chard_86</name><uri>model://crop_chard</uri><pose>-6.0 -4.8 0.710 0 0 3.68</pose></include>
+    <include><name>crop_chard_87</name><uri>model://crop_chard</uri><pose>-6.0 -4.2 0.698 0 0 4.38</pose></include>
+    <include><name>crop_chard_88</name><uri>model://crop_chard</uri><pose>-6.0 -3.6 0.698 0 0 5.08</pose></include>
+    <include><name>crop_chard_89</name><uri>model://crop_chard</uri><pose>-6.0 -3.0 0.682 0 0 5.78</pose></include>
+    <include><name>crop_chard_90</name><uri>model://crop_chard</uri><pose>-6.0 -2.4 0.675 0 0 0.20</pose></include>
+    <include><name>crop_chard_91</name><uri>model://crop_chard</uri><pose>-6.0 -1.8 0.675 0 0 0.90</pose></include>
+    <include><name>crop_chard_92</name><uri>model://crop_chard</uri><pose>-6.0 -1.2 0.675 0 0 1.60</pose></include>
+    <include><name>crop_chard_93</name><uri>model://crop_chard</uri><pose>-6.0 -0.6 0.675 0 0 2.30</pose></include>
+    <include><name>crop_chard_94</name><uri>model://crop_chard</uri><pose>-6.0 -0.0 0.667 0 0 3.00</pose></include>
+    <include><name>crop_chard_95</name><uri>model://crop_chard</uri><pose>-6.0 0.6 0.639 0 0 3.70</pose></include>
+    <include><name>crop_chard_96</name><uri>model://crop_chard</uri><pose>-6.0 1.2 0.600 0 0 4.40</pose></include>
+    <include><name>crop_chard_97</name><uri>model://crop_chard</uri><pose>-6.0 1.8 0.600 0 0 5.10</pose></include>
+    <include><name>crop_chard_98</name><uri>model://crop_chard</uri><pose>-6.0 2.4 0.557 0 0 5.80</pose></include>
+    <include><name>crop_chard_99</name><uri>model://crop_chard</uri><pose>-6.0 3.0 0.522 0 0 0.22</pose></include>
+    <include><name>crop_chard_100</name><uri>model://crop_chard</uri><pose>-6.0 3.6 0.498 0 0 0.92</pose></include>
+    <include><name>crop_chard_101</name><uri>model://crop_chard</uri><pose>-6.0 4.2 0.498 0 0 1.62</pose></include>
+    <include><name>crop_chard_102</name><uri>model://crop_chard</uri><pose>-6.0 4.8 0.486 0 0 2.32</pose></include>
+    <include><name>crop_chard_103</name><uri>model://crop_chard</uri><pose>-6.0 5.4 0.478 0 0 3.02</pose></include>
+    <include><name>crop_chard_104</name><uri>model://crop_chard</uri><pose>-6.0 6.0 0.475 0 0 3.72</pose></include>
+    <include><name>crop_zucchini_105</name><uri>model://crop_zucchini</uri><pose>-4.5 -6.0 0.722 0 0 4.42</pose></include>
+    <include><name>crop_zucchini_106</name><uri>model://crop_zucchini</uri><pose>-4.5 -4.5 0.714 0 0 5.12</pose></include>
+    <include><name>crop_zucchini_107</name><uri>model://crop_zucchini</uri><pose>-4.5 -3.0 0.671 0 0 5.82</pose></include>
+    <include><name>crop_zucchini_108</name><uri>model://crop_zucchini</uri><pose>-4.5 -1.5 0.663 0 0 0.24</pose></include>
+    <include><name>crop_zucchini_109</name><uri>model://crop_zucchini</uri><pose>-4.5 0.0 0.647 0 0 0.94</pose></include>
+    <include><name>crop_zucchini_110</name><uri>model://crop_zucchini</uri><pose>-4.5 1.5 0.588 0 0 1.64</pose></include>
+    <include><name>crop_zucchini_111</name><uri>model://crop_zucchini</uri><pose>-4.5 3.0 0.537 0 0 2.34</pose></include>
+    <include><name>crop_zucchini_112</name><uri>model://crop_zucchini</uri><pose>-4.5 4.5 0.506 0 0 3.04</pose></include>
+    <include><name>crop_zucchini_113</name><uri>model://crop_zucchini</uri><pose>-4.5 6.0 0.502 0 0 3.74</pose></include>
+    <include><name>crop_zucchini_114</name><uri>model://crop_zucchini</uri><pose>-3.0 -6.0 0.729 0 0 4.44</pose></include>
+    <include><name>crop_zucchini_115</name><uri>model://crop_zucchini</uri><pose>-3.0 -4.5 0.725 0 0 5.14</pose></include>
+    <include><name>crop_zucchini_116</name><uri>model://crop_zucchini</uri><pose>-3.0 -3.0 0.694 0 0 5.84</pose></include>
+    <include><name>crop_zucchini_117</name><uri>model://crop_zucchini</uri><pose>-3.0 -1.5 0.686 0 0 0.26</pose></include>
+    <include><name>crop_zucchini_118</name><uri>model://crop_zucchini</uri><pose>-3.0 0.0 0.671 0 0 0.96</pose></include>
+    <include><name>crop_zucchini_119</name><uri>model://crop_zucchini</uri><pose>-3.0 1.5 0.616 0 0 1.66</pose></include>
+    <include><name>crop_zucchini_120</name><uri>model://crop_zucchini</uri><pose>-3.0 3.0 0.545 0 0 2.36</pose></include>
+    <include><name>crop_zucchini_121</name><uri>model://crop_zucchini</uri><pose>-3.0 4.5 0.514 0 0 3.06</pose></include>
+    <include><name>crop_zucchini_122</name><uri>model://crop_zucchini</uri><pose>-3.0 6.0 0.518 0 0 3.76</pose></include>
+    <include><name>crop_zucchini_123</name><uri>model://crop_zucchini</uri><pose>-1.5 -6.0 0.757 0 0 4.46</pose></include>
+    <include><name>crop_zucchini_124</name><uri>model://crop_zucchini</uri><pose>-1.5 -4.5 0.741 0 0 5.16</pose></include>
+    <include><name>crop_zucchini_125</name><uri>model://crop_zucchini</uri><pose>-1.5 -3.0 0.710 0 0 5.86</pose></include>
+    <include><name>crop_zucchini_126</name><uri>model://crop_zucchini</uri><pose>-1.5 -1.5 0.698 0 0 0.28</pose></include>
+    <include><name>crop_zucchini_127</name><uri>model://crop_zucchini</uri><pose>-1.5 0.0 0.690 0 0 0.98</pose></include>
+    <include><name>crop_zucchini_128</name><uri>model://crop_zucchini</uri><pose>-1.5 1.5 0.647 0 0 1.68</pose></include>
+    <include><name>crop_zucchini_129</name><uri>model://crop_zucchini</uri><pose>-1.5 3.0 0.588 0 0 2.38</pose></include>
+    <include><name>crop_zucchini_130</name><uri>model://crop_zucchini</uri><pose>-1.5 4.5 0.561 0 0 3.08</pose></include>
+    <include><name>crop_zucchini_131</name><uri>model://crop_zucchini</uri><pose>-1.5 6.0 0.549 0 0 3.78</pose></include>
+    <include><name>crop_artichoke_132</name><uri>model://crop_artichoke</uri><pose>1.5 -6.0 0.780 0 0 4.48</pose></include>
+    <include><name>crop_artichoke_133</name><uri>model://crop_artichoke</uri><pose>1.5 -4.4 0.761 0 0 5.18</pose></include>
+    <include><name>crop_artichoke_134</name><uri>model://crop_artichoke</uri><pose>1.5 -2.8 0.741 0 0 5.88</pose></include>
+    <include><name>crop_artichoke_135</name><uri>model://crop_artichoke</uri><pose>1.5 -1.2 0.714 0 0 0.30</pose></include>
+    <include><name>crop_artichoke_136</name><uri>model://crop_artichoke</uri><pose>1.5 0.4 0.651 0 0 1.00</pose></include>
+    <include><name>crop_artichoke_137</name><uri>model://crop_artichoke</uri><pose>1.5 2.0 0.624 0 0 1.70</pose></include>
+    <include><name>crop_artichoke_138</name><uri>model://crop_artichoke</uri><pose>1.5 3.6 0.588 0 0 2.40</pose></include>
+    <include><name>crop_artichoke_139</name><uri>model://crop_artichoke</uri><pose>1.5 5.2 0.561 0 0 3.10</pose></include>
+    <include><name>crop_artichoke_140</name><uri>model://crop_artichoke</uri><pose>3.0 -6.0 0.753 0 0 3.80</pose></include>
+    <include><name>crop_artichoke_141</name><uri>model://crop_artichoke</uri><pose>3.0 -4.4 0.737 0 0 4.50</pose></include>
+    <include><name>crop_artichoke_142</name><uri>model://crop_artichoke</uri><pose>3.0 -2.8 0.722 0 0 5.20</pose></include>
+    <include><name>crop_artichoke_143</name><uri>model://crop_artichoke</uri><pose>3.0 -1.2 0.686 0 0 5.90</pose></include>
+    <include><name>crop_artichoke_144</name><uri>model://crop_artichoke</uri><pose>3.0 0.4 0.604 0 0 0.32</pose></include>
+    <include><name>crop_artichoke_145</name><uri>model://crop_artichoke</uri><pose>3.0 2.0 0.573 0 0 1.02</pose></include>
+    <include><name>crop_artichoke_146</name><uri>model://crop_artichoke</uri><pose>3.0 3.6 0.553 0 0 1.72</pose></include>
+    <include><name>crop_artichoke_147</name><uri>model://crop_artichoke</uri><pose>3.0 5.2 0.557 0 0 2.42</pose></include>
+    <include><name>crop_artichoke_148</name><uri>model://crop_artichoke</uri><pose>4.5 -6.0 0.765 0 0 3.12</pose></include>
+    <include><name>crop_artichoke_149</name><uri>model://crop_artichoke</uri><pose>4.5 -4.4 0.757 0 0 3.82</pose></include>
+    <include><name>crop_artichoke_150</name><uri>model://crop_artichoke</uri><pose>4.5 -2.8 0.725 0 0 4.52</pose></include>
+    <include><name>crop_artichoke_151</name><uri>model://crop_artichoke</uri><pose>4.5 -1.2 0.667 0 0 5.22</pose></include>
+    <include><name>crop_artichoke_152</name><uri>model://crop_artichoke</uri><pose>4.5 0.4 0.565 0 0 5.92</pose></include>
+    <include><name>crop_artichoke_153</name><uri>model://crop_artichoke</uri><pose>4.5 2.0 0.533 0 0 0.34</pose></include>
+    <include><name>crop_artichoke_154</name><uri>model://crop_artichoke</uri><pose>4.5 3.6 0.541 0 0 1.04</pose></include>
+    <include><name>crop_artichoke_155</name><uri>model://crop_artichoke</uri><pose>4.5 5.2 0.584 0 0 1.74</pose></include>
+    <include><name>crop_chard_156</name><uri>model://crop_chard</uri><pose>5.5 -6.0 0.776 0 0 2.44</pose></include>
+    <include><name>crop_chard_157</name><uri>model://crop_chard</uri><pose>5.5 -5.4 0.773 0 0 3.14</pose></include>
+    <include><name>crop_chard_158</name><uri>model://crop_chard</uri><pose>5.5 -4.8 0.765 0 0 3.84</pose></include>
+    <include><name>crop_chard_159</name><uri>model://crop_chard</uri><pose>5.5 -4.2 0.749 0 0 4.54</pose></include>
+    <include><name>crop_chard_160</name><uri>model://crop_chard</uri><pose>5.5 -3.6 0.749 0 0 5.24</pose></include>
+    <include><name>crop_chard_161</name><uri>model://crop_chard</uri><pose>5.5 -3.0 0.725 0 0 5.94</pose></include>
+    <include><name>crop_chard_162</name><uri>model://crop_chard</uri><pose>5.5 -2.4 0.698 0 0 0.36</pose></include>
+    <include><name>crop_chard_163</name><uri>model://crop_chard</uri><pose>5.5 -1.8 0.667 0 0 1.06</pose></include>
+    <include><name>crop_chard_164</name><uri>model://crop_chard</uri><pose>5.5 -1.2 0.667 0 0 1.76</pose></include>
+    <include><name>crop_chard_165</name><uri>model://crop_chard</uri><pose>5.5 -0.6 0.631 0 0 2.46</pose></include>
+    <include><name>crop_chard_166</name><uri>model://crop_chard</uri><pose>5.5 -0.0 0.604 0 0 3.16</pose></include>
+    <include><name>crop_chard_167</name><uri>model://crop_chard</uri><pose>5.5 0.6 0.573 0 0 3.86</pose></include>
+    <include><name>crop_chard_168</name><uri>model://crop_chard</uri><pose>5.5 1.2 0.549 0 0 4.56</pose></include>
+    <include><name>crop_chard_169</name><uri>model://crop_chard</uri><pose>5.5 1.8 0.549 0 0 5.26</pose></include>
+    <include><name>crop_chard_170</name><uri>model://crop_chard</uri><pose>5.5 2.4 0.541 0 0 5.96</pose></include>
+    <include><name>crop_chard_171</name><uri>model://crop_chard</uri><pose>5.5 3.0 0.541 0 0 0.38</pose></include>
+    <include><name>crop_chard_172</name><uri>model://crop_chard</uri><pose>5.5 3.6 0.557 0 0 1.08</pose></include>
+    <include><name>crop_chard_173</name><uri>model://crop_chard</uri><pose>5.5 4.2 0.557 0 0 1.78</pose></include>
+    <include><name>crop_chard_174</name><uri>model://crop_chard</uri><pose>5.5 4.8 0.580 0 0 2.48</pose></include>
+    <include><name>crop_chard_175</name><uri>model://crop_chard</uri><pose>5.5 5.4 0.604 0 0 3.18</pose></include>
+    <include><name>crop_chard_176</name><uri>model://crop_chard</uri><pose>5.5 6.0 0.631 0 0 3.88</pose></include>
+    <include><name>crop_chard_177</name><uri>model://crop_chard</uri><pose>6.25 -6.0 0.780 0 0 4.58</pose></include>
+    <include><name>crop_chard_178</name><uri>model://crop_chard</uri><pose>6.25 -5.4 0.776 0 0 5.28</pose></include>
+    <include><name>crop_chard_179</name><uri>model://crop_chard</uri><pose>6.25 -4.8 0.765 0 0 5.98</pose></include>
+    <include><name>crop_chard_180</name><uri>model://crop_chard</uri><pose>6.25 -4.2 0.745 0 0 0.40</pose></include>
+    <include><name>crop_chard_181</name><uri>model://crop_chard</uri><pose>6.25 -3.6 0.745 0 0 1.10</pose></include>
+    <include><name>crop_chard_182</name><uri>model://crop_chard</uri><pose>6.25 -3.0 0.722 0 0 1.80</pose></include>
+    <include><name>crop_chard_183</name><uri>model://crop_chard</uri><pose>6.25 -2.4 0.694 0 0 2.50</pose></include>
+    <include><name>crop_chard_184</name><uri>model://crop_chard</uri><pose>6.25 -1.8 0.667 0 0 3.20</pose></include>
+    <include><name>crop_chard_185</name><uri>model://crop_chard</uri><pose>6.25 -1.2 0.667 0 0 3.90</pose></include>
+    <include><name>crop_chard_186</name><uri>model://crop_chard</uri><pose>6.25 -0.6 0.643 0 0 4.60</pose></include>
+    <include><name>crop_chard_187</name><uri>model://crop_chard</uri><pose>6.25 -0.0 0.620 0 0 5.30</pose></include>
+    <include><name>crop_chard_188</name><uri>model://crop_chard</uri><pose>6.25 0.6 0.588 0 0 6.00</pose></include>
+    <include><name>crop_chard_189</name><uri>model://crop_chard</uri><pose>6.25 1.2 0.569 0 0 0.42</pose></include>
+    <include><name>crop_chard_190</name><uri>model://crop_chard</uri><pose>6.25 1.8 0.569 0 0 1.12</pose></include>
+    <include><name>crop_chard_191</name><uri>model://crop_chard</uri><pose>6.25 2.4 0.561 0 0 1.82</pose></include>
+    <include><name>crop_chard_192</name><uri>model://crop_chard</uri><pose>6.25 3.0 0.565 0 0 2.52</pose></include>
+    <include><name>crop_chard_193</name><uri>model://crop_chard</uri><pose>6.25 3.6 0.580 0 0 3.22</pose></include>
+    <include><name>crop_chard_194</name><uri>model://crop_chard</uri><pose>6.25 4.2 0.580 0 0 3.92</pose></include>
+    <include><name>crop_chard_195</name><uri>model://crop_chard</uri><pose>6.25 4.8 0.604 0 0 4.62</pose></include>
+    <include><name>crop_chard_196</name><uri>model://crop_chard</uri><pose>6.25 5.4 0.620 0 0 5.32</pose></include>
+    <include><name>crop_chard_197</name><uri>model://crop_chard</uri><pose>6.25 6.0 0.643 0 0 6.02</pose></include>
+    <include><name>crop_chard_198</name><uri>model://crop_chard</uri><pose>7.0 -6.0 0.780 0 0 0.44</pose></include>
+    <include><name>crop_chard_199</name><uri>model://crop_chard</uri><pose>7.0 -5.4 0.773 0 0 1.14</pose></include>
+    <include><name>crop_chard_200</name><uri>model://crop_chard</uri><pose>7.0 -4.8 0.757 0 0 1.84</pose></include>
+    <include><name>crop_chard_201</name><uri>model://crop_chard</uri><pose>7.0 -4.2 0.737 0 0 2.54</pose></include>
+    <include><name>crop_chard_202</name><uri>model://crop_chard</uri><pose>7.0 -3.6 0.737 0 0 3.24</pose></include>
+    <include><name>crop_chard_203</name><uri>model://crop_chard</uri><pose>7.0 -3.0 0.718 0 0 3.94</pose></include>
+    <include><name>crop_chard_204</name><uri>model://crop_chard</uri><pose>7.0 -2.4 0.698 0 0 4.64</pose></include>
+    <include><name>crop_chard_205</name><uri>model://crop_chard</uri><pose>7.0 -1.8 0.675 0 0 5.34</pose></include>
+    <include><name>crop_chard_206</name><uri>model://crop_chard</uri><pose>7.0 -1.2 0.675 0 0 6.04</pose></include>
+    <include><name>crop_chard_207</name><uri>model://crop_chard</uri><pose>7.0 -0.6 0.659 0 0 0.46</pose></include>
+    <include><name>crop_chard_208</name><uri>model://crop_chard</uri><pose>7.0 -0.0 0.635 0 0 1.16</pose></include>
+    <include><name>crop_chard_209</name><uri>model://crop_chard</uri><pose>7.0 0.6 0.604 0 0 1.86</pose></include>
+    <include><name>crop_chard_210</name><uri>model://crop_chard</uri><pose>7.0 1.2 0.588 0 0 2.56</pose></include>
+    <include><name>crop_chard_211</name><uri>model://crop_chard</uri><pose>7.0 1.8 0.588 0 0 3.26</pose></include>
+    <include><name>crop_chard_212</name><uri>model://crop_chard</uri><pose>7.0 2.4 0.580 0 0 3.96</pose></include>
+    <include><name>crop_chard_213</name><uri>model://crop_chard</uri><pose>7.0 3.0 0.584 0 0 4.66</pose></include>
+    <include><name>crop_chard_214</name><uri>model://crop_chard</uri><pose>7.0 3.6 0.600 0 0 5.36</pose></include>
+    <include><name>crop_chard_215</name><uri>model://crop_chard</uri><pose>7.0 4.2 0.600 0 0 6.06</pose></include>
+    <include><name>crop_chard_216</name><uri>model://crop_chard</uri><pose>7.0 4.8 0.616 0 0 0.48</pose></include>
+    <include><name>crop_chard_217</name><uri>model://crop_chard</uri><pose>7.0 5.4 0.627 0 0 1.18</pose></include>
+    <include><name>crop_chard_218</name><uri>model://crop_chard</uri><pose>7.0 6.0 0.643 0 0 1.88</pose></include>
+    <include><name>crop_chard_219</name><uri>model://crop_chard</uri><pose>7.75 -6.0 0.780 0 0 2.58</pose></include>
+    <include><name>crop_chard_220</name><uri>model://crop_chard</uri><pose>7.75 -5.4 0.769 0 0 3.28</pose></include>
+    <include><name>crop_chard_221</name><uri>model://crop_chard</uri><pose>7.75 -4.8 0.749 0 0 3.98</pose></include>
+    <include><name>crop_chard_222</name><uri>model://crop_chard</uri><pose>7.75 -4.2 0.733 0 0 4.68</pose></include>
+    <include><name>crop_chard_223</name><uri>model://crop_chard</uri><pose>7.75 -3.6 0.733 0 0 5.38</pose></include>
+    <include><name>crop_chard_224</name><uri>model://crop_chard</uri><pose>7.75 -3.0 0.722 0 0 6.08</pose></include>
+    <include><name>crop_chard_225</name><uri>model://crop_chard</uri><pose>7.75 -2.4 0.710 0 0 0.50</pose></include>
+    <include><name>crop_chard_226</name><uri>model://crop_chard</uri><pose>7.75 -1.8 0.694 0 0 1.20</pose></include>
+    <include><name>crop_chard_227</name><uri>model://crop_chard</uri><pose>7.75 -1.2 0.694 0 0 1.90</pose></include>
+    <include><name>crop_chard_228</name><uri>model://crop_chard</uri><pose>7.75 -0.6 0.675 0 0 2.60</pose></include>
+    <include><name>crop_chard_229</name><uri>model://crop_chard</uri><pose>7.75 -0.0 0.647 0 0 3.30</pose></include>
+    <include><name>crop_chard_230</name><uri>model://crop_chard</uri><pose>7.75 0.6 0.616 0 0 4.00</pose></include>
+    <include><name>crop_chard_231</name><uri>model://crop_chard</uri><pose>7.75 1.2 0.596 0 0 4.70</pose></include>
+    <include><name>crop_chard_232</name><uri>model://crop_chard</uri><pose>7.75 1.8 0.596 0 0 5.40</pose></include>
+    <include><name>crop_chard_233</name><uri>model://crop_chard</uri><pose>7.75 2.4 0.588 0 0 6.10</pose></include>
+    <include><name>crop_chard_234</name><uri>model://crop_chard</uri><pose>7.75 3.0 0.592 0 0 0.52</pose></include>
+    <include><name>crop_chard_235</name><uri>model://crop_chard</uri><pose>7.75 3.6 0.604 0 0 1.22</pose></include>
+    <include><name>crop_chard_236</name><uri>model://crop_chard</uri><pose>7.75 4.2 0.604 0 0 1.92</pose></include>
+    <include><name>crop_chard_237</name><uri>model://crop_chard</uri><pose>7.75 4.8 0.620 0 0 2.62</pose></include>
+    <include><name>crop_chard_238</name><uri>model://crop_chard</uri><pose>7.75 5.4 0.627 0 0 3.32</pose></include>
+    <include><name>crop_chard_239</name><uri>model://crop_chard</uri><pose>7.75 6.0 0.643 0 0 4.02</pose></include>
+    <include><name>crop_chard_240</name><uri>model://crop_chard</uri><pose>8.5 -6.0 0.776 0 0 4.72</pose></include>
+    <include><name>crop_chard_241</name><uri>model://crop_chard</uri><pose>8.5 -5.4 0.761 0 0 5.42</pose></include>
+    <include><name>crop_chard_242</name><uri>model://crop_chard</uri><pose>8.5 -4.8 0.741 0 0 6.12</pose></include>
+    <include><name>crop_chard_243</name><uri>model://crop_chard</uri><pose>8.5 -4.2 0.729 0 0 0.54</pose></include>
+    <include><name>crop_chard_244</name><uri>model://crop_chard</uri><pose>8.5 -3.6 0.729 0 0 1.24</pose></include>
+    <include><name>crop_chard_245</name><uri>model://crop_chard</uri><pose>8.5 -3.0 0.729 0 0 1.94</pose></include>
+    <include><name>crop_chard_246</name><uri>model://crop_chard</uri><pose>8.5 -2.4 0.722 0 0 2.64</pose></include>
+    <include><name>crop_chard_247</name><uri>model://crop_chard</uri><pose>8.5 -1.8 0.710 0 0 3.34</pose></include>
+    <include><name>crop_chard_248</name><uri>model://crop_chard</uri><pose>8.5 -1.2 0.710 0 0 4.04</pose></include>
+    <include><name>crop_chard_249</name><uri>model://crop_chard</uri><pose>8.5 -0.6 0.686 0 0 4.74</pose></include>
+    <include><name>crop_chard_250</name><uri>model://crop_chard</uri><pose>8.5 -0.0 0.659 0 0 5.44</pose></include>
+    <include><name>crop_chard_251</name><uri>model://crop_chard</uri><pose>8.5 0.6 0.627 0 0 6.14</pose></include>
+    <include><name>crop_chard_252</name><uri>model://crop_chard</uri><pose>8.5 1.2 0.608 0 0 0.56</pose></include>
+    <include><name>crop_chard_253</name><uri>model://crop_chard</uri><pose>8.5 1.8 0.608 0 0 1.26</pose></include>
+    <include><name>crop_chard_254</name><uri>model://crop_chard</uri><pose>8.5 2.4 0.596 0 0 1.96</pose></include>
+    <include><name>crop_chard_255</name><uri>model://crop_chard</uri><pose>8.5 3.0 0.596 0 0 2.66</pose></include>
+    <include><name>crop_chard_256</name><uri>model://crop_chard</uri><pose>8.5 3.6 0.604 0 0 3.36</pose></include>
+    <include><name>crop_chard_257</name><uri>model://crop_chard</uri><pose>8.5 4.2 0.604 0 0 4.06</pose></include>
+    <include><name>crop_chard_258</name><uri>model://crop_chard</uri><pose>8.5 4.8 0.612 0 0 4.76</pose></include>
+    <include><name>crop_chard_259</name><uri>model://crop_chard</uri><pose>8.5 5.4 0.620 0 0 5.46</pose></include>
+    <include><name>crop_chard_260</name><uri>model://crop_chard</uri><pose>8.5 6.0 0.639 0 0 6.16</pose></include>
+
+    <!-- hay bales at the edge -->
+    <include><name>hay_bale_0</name><uri>model://hay_bale</uri><pose>-11 7 0.604 0 0 0.5</pose></include>
+    <include><name>hay_bale_1</name><uri>model://hay_bale</uri><pose>11 -7 0.722 0 0 1.2</pose></include>
+  </world>
+</sdf>

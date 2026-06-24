@@ -139,15 +139,15 @@ QGC_CANDIDATES = [
     "~/Apps/QGroundControl.AppImage",
 ]
 
-# Dark theme palette
-BG = "#1e1e24"
-PANEL = "#2b2d42"
-ACCENT = "#ffb703"
-OK = "#2a9d8f"
-WARN = "#e76f51"
-DANGER = "#e63946"
-TEXT = "#edf2f4"
-MUTED = "#9aa0b4"
+# Dark theme palette (modern, GitHub-dark inspired)
+BG = "#0d1117"
+PANEL = "#161b22"
+ACCENT = "#58a6ff"
+OK = "#3fb950"
+WARN = "#d29922"
+DANGER = "#f85149"
+TEXT = "#e6edf3"
+MUTED = "#8b949e"
 
 
 def wrap_pi(angle: float) -> float:
@@ -779,14 +779,23 @@ class MissionControlApp:
 
     # ---- Styling -------------------------------------------------------------
     def _build_styles(self):
+        FONT = "Ubuntu"  # modern sans on Ubuntu; Tk falls back if absent
         style = ttk.Style()
         style.theme_use("clam")
-        style.configure("TButton", font=("Helvetica", 9, "bold"), padding=4)
-        style.configure("TEntry", fieldbackground="white")
-        style.configure("Treeview", background="#26262f", fieldbackground="#26262f",
-                        foreground=TEXT, rowheight=20, font=("Helvetica", 9))
-        style.configure("Treeview.Heading", font=("Helvetica", 9, "bold"))
-        style.map("TButton", background=[("active", "#3a3d5c")])
+        style.configure("TButton", font=(FONT, 9, "bold"), padding=6,
+                        background="#21262d", foreground=TEXT, borderwidth=0)
+        style.map("TButton",
+                  background=[("active", "#30363d"), ("pressed", ACCENT)],
+                  foreground=[("pressed", BG)])
+        style.configure("TEntry", fieldbackground="#21262d", foreground=TEXT,
+                        bordercolor="#30363d", insertcolor=TEXT, padding=3)
+        style.configure("TCombobox", fieldbackground="#21262d", background="#21262d",
+                        foreground=TEXT, arrowcolor=TEXT, bordercolor="#30363d")
+        style.configure("Treeview", background=PANEL, fieldbackground=PANEL,
+                        foreground=TEXT, rowheight=24, font=(FONT, 9), borderwidth=0)
+        style.configure("Treeview.Heading", font=(FONT, 9, "bold"),
+                        background="#21262d", foreground=MUTED, relief="flat")
+        style.map("Treeview", background=[("selected", ACCENT)], foreground=[("selected", BG)])
 
     def _section(self, parent, title):
         frame = tk.LabelFrame(parent, text=title, bg=PANEL, fg=ACCENT,
@@ -795,12 +804,12 @@ class MissionControlApp:
 
     # ---- Layout --------------------------------------------------------------
     def _build_layout(self):
-        header = tk.Frame(self.root, bg="#11131c", height=40)
+        header = tk.Frame(self.root, bg="#010409", height=40)
         header.pack(fill="x")
         tk.Label(header, text="\U0001F6F8  PX4 Drone Mission Control",
-                 font=("Helvetica", 14, "bold"), fg=TEXT, bg="#11131c").pack(side="left", padx=12, pady=6)
+                 font=("Helvetica", 14, "bold"), fg=TEXT, bg="#010409").pack(side="left", padx=12, pady=6)
         self.lbl_link = tk.Label(header, text="LINK: —", font=("Helvetica", 10, "bold"),
-                                 fg=MUTED, bg="#11131c")
+                                 fg=MUTED, bg="#010409")
         self.lbl_link.pack(side="right", padx=12)
 
         body = tk.Frame(self.root, bg=BG)

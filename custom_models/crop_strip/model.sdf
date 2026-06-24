@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <!-- ponytail: a crop row = one low green box (0.45 wide x 38 long x 0.45 tall),
+       leaf-textured so it reads as dense foliage from above. Visual only. The
+       striped look comes from spacing rows ~0.9 m apart over brown soil_terrain.
+       Visual sits +0.225 so the include pose-z lands the base on the ground. -->
+  <model name="crop_strip">
+    <static>true</static>
+    <link name="link">
+      <visual name="visual">
+        <pose>0 0 0.225 0 0 0</pose>
+        <geometry>
+          <box><size>0.45 38 0.45</size></box>
+        </geometry>
+        <material>
+          <ambient>0.12 0.22 0.06 1</ambient>
+          <diffuse>0.22 0.42 0.12 1</diffuse>
+          <specular>0.03 0.03 0.03 1</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://crop_tomato/materials/textures/AG15lef1.png</albedo_map>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

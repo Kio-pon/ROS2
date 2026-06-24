@@ -1,15 +1,15 @@
 <?xml version="1.0" ?>
 <sdf version="1.9">
-  <model name="forest_terrain">
+  <model name="farmland_terrain">
     <static>true</static>
     <link name="link">
-      <!-- size = footprint_x footprint_y max_height (metres). White pixel = max_height,
-           black = 0. Tune the 3rd value to make hills taller/shorter. -->
+      <!-- size = footprint_x footprint_y max_height (m). Max 1.5 m = gentle
+           rolling farmland, not bumpy forest. Reuses forest_terrain assets. -->
       <collision name="collision">
         <geometry>
           <heightmap>
             <uri>model://forest_terrain/bc_terrain_heightmap_257.png</uri>
-            <size>200 200 8</size>
+            <size>200 200 1.5</size>
             <pos>0 0 0</pos>
           </heightmap>
         </geometry>
@@ -22,10 +22,10 @@
             <texture>
               <diffuse>model://forest_terrain/bc_moss_rock_diffuse.png</diffuse>
               <normal>model://forest_terrain/bc_moss_rock_normal.png</normal>
-              <size>20</size>
+              <size>10</size>
             </texture>
             <uri>model://forest_terrain/bc_terrain_heightmap_257.png</uri>
-            <size>200 200 8</size>
+            <size>200 200 1.5</size>
             <pos>0 0 0</pos>
           </heightmap>
         </geometry>

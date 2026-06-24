@@ -1,0 +1,8 @@
+crop_tomato mesh (meshes/tomato.dae) and textures (materials/textures/AG15*.png)
+are from the fields-ignition project:
+
+    https://github.com/azazdeaz/fields-ignition  (branch: noetic)
+    MIT License, Copyright (c) 2020 András Polgár
+
+Only file:// -> model:// URIs and the SDF version were changed; the geometry and
+textures are unmodified.

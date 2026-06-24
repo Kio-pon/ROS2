@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <!-- ponytail: crop row = one green box, 30 m long. Visual only (drone flies
+       over). Rigid box, so on rolling terrain the ends sit a little high/low;
+       fine at 1.5 m max height. Swap in a crop mesh if you want real plants. -->
+  <model name="crop_row">
+    <static>true</static>
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <box><size>0.6 30 0.7</size></box>
+        </geometry>
+        <material>
+          <ambient>0.18 0.32 0.10 1</ambient>
+          <diffuse>0.30 0.55 0.16 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

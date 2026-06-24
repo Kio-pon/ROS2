@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <!-- Swiss chard plant (~0.23 m tall). Mesh + textures from
+       PIC4SeR/AutomaticRowCropGenerator (MIT) - see NOTICE. URIs rewritten
+       model://chard1 -> model://crop_chard, SDF 1.6 -> 1.9.
+       ponytail: collision is a small box, not the 1.9 MB mesh - hundreds of
+       plants would be far too heavy with per-leaf mesh collision, and the drone
+       doesn't need leaf-accurate hits. Swap to <mesh> collision if you ever do. -->
+  <model name="crop_chard">
+    <static>true</static>
+    <link name="link">
+      <visual name="visual">
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <mesh><uri>model://crop_chard/meshes/bieta1.obj</uri></mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <pose>0 0 0.11 0 0 0</pose>
+        <geometry>
+          <box><size>0.25 0.3 0.22</size></box>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

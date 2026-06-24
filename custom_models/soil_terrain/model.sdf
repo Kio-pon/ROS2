@@ -1,15 +1,15 @@
 <?xml version="1.0" ?>
 <sdf version="1.9">
-  <model name="forest_terrain">
+  <model name="soil_terrain">
     <static>true</static>
     <link name="link">
-      <!-- size = footprint_x footprint_y max_height (metres). White pixel = max_height,
-           black = 0. Tune the 3rd value to make hills taller/shorter. -->
+      <!-- Near-flat field: 1 m max height so crop rows stay roughly level.
+           Reuses forest_terrain's heightmap PNG; texture is local brown soil. -->
       <collision name="collision">
         <geometry>
           <heightmap>
             <uri>model://forest_terrain/bc_terrain_heightmap_257.png</uri>
-            <size>200 200 8</size>
+            <size>200 200 1</size>
             <pos>0 0 0</pos>
           </heightmap>
         </geometry>
@@ -20,12 +20,12 @@
           <heightmap>
             <use_terrain_paging>false</use_terrain_paging>
             <texture>
-              <diffuse>model://forest_terrain/bc_moss_rock_diffuse.png</diffuse>
+              <diffuse>model://soil_terrain/soil_diffuse.png</diffuse>
               <normal>model://forest_terrain/bc_moss_rock_normal.png</normal>
-              <size>20</size>
+              <size>4</size>
             </texture>
             <uri>model://forest_terrain/bc_terrain_heightmap_257.png</uri>
-            <size>200 200 8</size>
+            <size>200 200 1</size>
             <pos>0 0 0</pos>
           </heightmap>
         </geometry>

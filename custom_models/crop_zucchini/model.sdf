@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <!-- Zucchini plant (~0.67 m). Mesh+textures from PIC4SeR/AutomaticRowCropGenerator
+       (MIT) - see NOTICE. Box collision (not the 4 MB mesh) + cast_shadows off so
+       many instances stay cheap on weak GPUs. -->
+  <model name="crop_zucchini">
+    <static>true</static>
+    <link name="link">
+      <visual name="visual">
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <mesh><uri>model://crop_zucchini/meshes/zucchina1.obj</uri></mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <pose>0 0 0.33 0 0 0</pose>
+        <geometry>
+          <box><size>0.8 0.8 0.66</size></box>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

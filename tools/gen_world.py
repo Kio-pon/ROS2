@@ -63,6 +63,18 @@ def world_sdf(name, ground, placements):
     return f"""<?xml version="1.0" ?>
 <sdf version="1.9">
   <world name="{name}">
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>16</iters>
+          <sor>1.3</sor>
+        </solver>
+      </ode>
+    </physics>
     <!-- no system plugins here: PX4 adds Physics/Sensors/etc via server.config -->
     <spherical_coordinates>
       <surface_model>EARTH_WGS84</surface_model>
@@ -72,7 +84,7 @@ def world_sdf(name, ground, placements):
       <elevation>0</elevation>
     </spherical_coordinates>
     <light type="directional" name="sun">
-      <cast_shadows>true</cast_shadows>
+      <cast_shadows>false</cast_shadows>
       <pose>0 0 100 0 0 0</pose>
       <diffuse>1 1 1 1</diffuse>
       <specular>0.4 0.4 0.4 1</specular>

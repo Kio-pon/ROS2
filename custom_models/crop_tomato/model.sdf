@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <!-- Tomato plant. Mesh + textures from azazdeaz/fields-ignition (MIT, (c) 2020
+       András Polgár) - see NOTICE. Paths rewritten file://tomato_0 -> model://crop_tomato.
+       Collision is a simple 0.1x0.1x1 m box (the drone doesn't need leaf-accurate hits). -->
+  <model name="crop_tomato">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <box><size>0.1 0.1 1</size></box>
+        </geometry>
+      </collision>
+      <visual name="branch">
+        <cast_shadows>false</cast_shadows>
+        <geometry><mesh><uri>model://crop_tomato/meshes/tomato.dae</uri><submesh><name>Branch1</name></submesh></mesh></geometry>
+        <material><diffuse>1 1 1 1</diffuse><pbr><metal><albedo_map>model://crop_tomato/materials/textures/AG15brn1.png</albedo_map></metal></pbr></material>
+      </visual>
+      <visual name="leaf1">
+        <cast_shadows>false</cast_shadows>
+        <geometry><mesh><uri>model://crop_tomato/meshes/tomato.dae</uri><submesh><name>Leaf1</name></submesh></mesh></geometry>
+        <material><diffuse>1 1 1 1</diffuse><pbr><metal><albedo_map>model://crop_tomato/materials/textures/AG15lef1.png</albedo_map></metal></pbr></material>
+      </visual>
+      <visual name="leaf2">
+        <cast_shadows>false</cast_shadows>
+        <geometry><mesh><uri>model://crop_tomato/meshes/tomato.dae</uri><submesh><name>Leaf2</name></submesh></mesh></geometry>
+        <material><diffuse>1 1 1 1</diffuse><pbr><metal><albedo_map>model://crop_tomato/materials/textures/AG15lef2.png</albedo_map></metal></pbr></material>
+      </visual>
+      <visual name="fruit1">
+        <cast_shadows>false</cast_shadows>
+        <geometry><mesh><uri>model://crop_tomato/meshes/tomato.dae</uri><submesh><name>Fruit1</name></submesh></mesh></geometry>
+        <material><diffuse>1 1 1 1</diffuse><pbr><metal><albedo_map>model://crop_tomato/materials/textures/AG15frt1.png</albedo_map></metal></pbr></material>
+      </visual>
+      <visual name="fruit2">
+        <cast_shadows>false</cast_shadows>
+        <geometry><mesh><uri>model://crop_tomato/meshes/tomato.dae</uri><submesh><name>Fruit2</name></submesh></mesh></geometry>
+        <material><diffuse>1 1 1 1</diffuse><pbr><metal><albedo_map>model://crop_tomato/materials/textures/AG15frt2.png</albedo_map></metal></pbr></material>
+      </visual>
+      <visual name="fruit3">
+        <cast_shadows>false</cast_shadows>
+        <geometry><mesh><uri>model://crop_tomato/meshes/tomato.dae</uri><submesh><name>Fruit3</name></submesh></mesh></geometry>
+        <material><diffuse>1 1 1 1</diffuse><pbr><metal><albedo_map>model://crop_tomato/materials/textures/AG15frt3.png</albedo_map></metal></pbr></material>
+      </visual>
+      <visual name="fruit4">
+        <cast_shadows>false</cast_shadows>
+        <geometry><mesh><uri>model://crop_tomato/meshes/tomato.dae</uri><submesh><name>Fruit4</name></submesh></mesh></geometry>
+        <material><diffuse>1 1 1 1</diffuse><pbr><metal><albedo_map>model://crop_tomato/materials/textures/AG15frt4.png</albedo_map></metal></pbr></material>
+      </visual>
+      <visual name="blossom1">
+        <cast_shadows>false</cast_shadows>
+        <geometry><mesh><uri>model://crop_tomato/meshes/tomato.dae</uri><submesh><name>Blossom1</name></submesh></mesh></geometry>
+        <material><diffuse>1 1 1 1</diffuse><pbr><metal><albedo_map>model://crop_tomato/materials/textures/AG15blo1.png</albedo_map></metal></pbr></material>
+      </visual>
+      <visual name="blossom2">
+        <cast_shadows>false</cast_shadows>
+        <geometry><mesh><uri>model://crop_tomato/meshes/tomato.dae</uri><submesh><name>Blossom2</name></submesh></mesh></geometry>
+        <material><diffuse>1 1 1 1</diffuse><pbr><metal><albedo_map>model://crop_tomato/materials/textures/AG15blo2.png</albedo_map></metal></pbr></material>
+      </visual>
+      <visual name="blossom3">
+        <cast_shadows>false</cast_shadows>
+        <geometry><mesh><uri>model://crop_tomato/meshes/tomato.dae</uri><submesh><name>Blossom3</name></submesh></mesh></geometry>
+        <material><diffuse>1 1 1 1</diffuse><pbr><metal><albedo_map>model://crop_tomato/materials/textures/AG15blo3.png</albedo_map></metal></pbr></material>
+      </visual>
+    </link>
+  </model>
+</sdf>

@@ -7,8 +7,40 @@
 #
 
 echo "================================================="
-echo "Cleaning up any old simulator / ROS 2 / bridge processes..."
+echo "  PX4 Drone Simulator — Starting Launcher..."
 echo "================================================="
+
+# Locate the script's own directory (works in Docker and native)
+SELF_DIR="$(cd "$(dirname "$0")" 2>/dev/null && pwd)"
+
+# ── 0. Handle options and launch GUI ─────────────────────────────────────
+SKIP_GUI=0
+for arg in "$@"; do
+    if [ "$arg" = "--skip-gui" ] || [ "$arg" = "--no-gui" ]; then
+        SKIP_GUI=1
+    fi
+done
+
+LAUNCHER="$SELF_DIR/launcher_gui.py"
+[ ! -f "$LAUNCHER" ] && LAUNCHER="$HOME/launchers/launcher_gui.py"
+[ ! -f "$LAUNCHER" ] && LAUNCHER="$HOME/launcher_gui.py"
+
+if [ "$SKIP_GUI" -eq 0 ]; then
+    if [ -f "$LAUNCHER" ]; then
+        python3 "$LAUNCHER"
+        if [ $? -ne 0 ]; then
+            echo "Launch cancelled by user."
+            exit 0
+        fi
+    else
+        echo "WARN: launcher_gui.py not found — using defaults."
+    fi
+else
+    echo "Skipping launcher GUI (using pre-configured or default settings)."
+fi
+
+# ── 1. Cleanup old processes ─────────────────────────────────────────────
+echo "Cleaning up any old simulator / ROS 2 / bridge processes..."
 pkill -f px4 || true
 pkill -f MicroXRCEAgent || true
 pkill -f ruby || true
@@ -18,23 +50,41 @@ pkill -f parameter_bridge || true
 pkill -f mission_control || true
 sleep 1
 
-# 1. DDS agent
+# ── 2. Source launcher settings (or use defaults) ────────────────────────
+ENV_FILE="$SELF_DIR/.drone_launch.env"
+[ ! -f "$ENV_FILE" ] && ENV_FILE="$HOME/.drone_launch.env"
+[ ! -f "$ENV_FILE" ] && ENV_FILE="$HOME/launchers/.drone_launch.env"
+
+if [ -f "$ENV_FILE" ]; then
+    echo "Loading launcher settings from $ENV_FILE..."
+    source "$ENV_FILE"
+    
+    # Path translation: if the patched world path is a Windows path (e.g. C:\Users\...),
+    # translate it to a WSL path so copy commands can find it.
+    if [[ "$LAUNCHER_WORLD_FILE" =~ ^[A-Za-z]:\\ ]]; then
+        LAUNCHER_WORLD_FILE=$(echo "$LAUNCHER_WORLD_FILE" | sed -e 's/\\/\//g' -e 's/^\([A-Za-z]\):/\/mnt\/\L\1/')
+    fi
+    
+    cat "$ENV_FILE"
+    echo "Translated world path: $LAUNCHER_WORLD_FILE"
+fi
+
+# DDS agent
 echo "Starting DDS Agent..."
 MicroXRCEAgent udp4 -p 8888 > ~/dds_agent.log 2>&1 &
 
-# 2. Aircraft / world — honour environment overrides (set by docker-compose
-#    or your shell); fall back to the camera-equipped x500 (airframe 4010).
+# Aircraft / world — honour launcher settings, then env overrides, then defaults
 export PX4_SYS_AUTOSTART="${PX4_SYS_AUTOSTART:-4010}"
 export PX4_SIM_MODEL="${PX4_SIM_MODEL:-gz_x500_mono_cam}"
 export PX4_GZ_WORLD="${PX4_GZ_WORLD:-forest}"
+export PX4_GZ_MODEL_POSE="${PX4_GZ_MODEL_POSE:-0,0,5.8}"
 export GZ_CONFIG_PATH="/usr/share/gz:${GZ_CONFIG_PATH:-}"
 unset PX4_GZ_MODEL_NAME
-# HEADLESS is left untouched: export HEADLESS=1 for a no-GUI Gazebo run.
+# NOTE: use ${VAR-default} (no colon) so an explicit empty HEADLESS="" from the
+# launcher (= "show Gazebo GUI") is preserved; only default to headless when UNSET.
+export HEADLESS="${HEADLESS-1}"
 
-# 2b. Make custom scenery available (forest/farmland). Works both in Docker
-#     (~/custom_*) and native (alongside this script). PX4's gz_env.sh keeps
-#     whatever GZ_SIM_RESOURCE_PATH we set here, so model:// trees resolve.
-SELF_DIR="$(cd "$(dirname "$0")" 2>/dev/null && pwd)"
+# Make custom scenery available (works both in Docker and native)
 for d in "$HOME/custom_models" "$SELF_DIR/custom_models"; do
     [ -d "$d" ] && export GZ_SIM_RESOURCE_PATH="$d:${GZ_SIM_RESOURCE_PATH:-}"
 done
@@ -42,15 +92,42 @@ for d in "$HOME/custom_worlds" "$SELF_DIR/custom_worlds"; do
     [ -d "$d" ] && cp -u "$d"/*.sdf "$HOME/PX4-Autopilot/Tools/simulation/gz/worlds/" 2>/dev/null || true
 done
 
+# Copy the launcher's patched world file into PX4's worlds directory
+if [ -n "$LAUNCHER_WORLD_FILE" ] && [ -f "$LAUNCHER_WORLD_FILE" ]; then
+    echo "Installing patched world: $LAUNCHER_WORLD_FILE"
+    cp -f "$LAUNCHER_WORLD_FILE" "$HOME/PX4-Autopilot/Tools/simulation/gz/worlds/" 2>/dev/null || true
+fi
+
+# 2c. Right-size the drone camera (biggest GPU cost: it renders offscreen every
+#     frame). Idempotent — replaces whatever values are there. Defaults are the
+#     potato-PC profile; the launcher overrides CAM_* per optimization preset.
+CAM_MODEL="$HOME/PX4-Autopilot/Tools/simulation/gz/models/mono_cam/model.sdf"
+if [ -f "$CAM_MODEL" ]; then
+    sed -i -E \
+        -e "s#<width>[0-9]+</width>#<width>${CAM_W:-640}</width>#" \
+        -e "s#<height>[0-9]+</height>#<height>${CAM_H:-480}</height>#" \
+        -e "s#<update_rate>[0-9]+</update_rate>#<update_rate>${CAM_HZ:-20}</update_rate>#" \
+        -e "s#<far>[0-9.]+</far>#<far>500</far>#" \
+        "$CAM_MODEL"
+    echo "Camera set to ${CAM_W:-640}x${CAM_H:-480}@${CAM_HZ:-20}Hz (far clip 500m)"
+fi
+
 # 3. Launch PX4 SITL + Gazebo
 echo "Launching PX4 SITL + Gazebo with a camera drone..."
 cd ~/PX4-Autopilot
 ./build/px4_sitl_default/bin/px4 -d > ~/px4.log 2>&1 &
 sleep 3
 
-# 4. Allow offboard / bypass GCS checks
-./build/px4_sitl_default/bin/px4-param set NAV_DLL_ACT 0 > /dev/null 2>&1
-./build/px4_sitl_default/bin/px4-param set COM_RC_IN_MODE 1 > /dev/null 2>&1
+# 4. SITL arming/control config — let QGC and mission_control arm & fly
+#    autonomously (offboard) with NO RC/joystick, and stop SITL-only failsafes
+#    from blocking arming. COM_RC_IN_MODE 4 = stick input disabled, which clears
+#    the "No manual control input" arming refusal.
+P=./build/px4_sitl_default/bin/px4-param
+$P set NAV_DLL_ACT  0 > /dev/null 2>&1   # datalink loss: no failsafe
+$P set NAV_RCL_ACT  0 > /dev/null 2>&1   # RC loss: no failsafe
+$P set COM_RC_IN_MODE 4 > /dev/null 2>&1 # stick input disabled (autonomous/offboard)
+$P set COM_RCL_EXCEPT 4 > /dev/null 2>&1 # allow offboard with no RC
+$P set COM_ARM_WO_GPS 1 > /dev/null 2>&1 # arm without GPS lock
 
 # 5. Wait for the simulator + sensors to come up
 echo "Waiting 15 seconds for the simulator and camera sensor to start..."

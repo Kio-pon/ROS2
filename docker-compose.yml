@@ -56,7 +56,7 @@ services:
       #   standard VTOL                : 4004 / gz_standard_vtol
       - PX4_SYS_AUTOSTART=${PX4_SYS_AUTOSTART:-4010}
       - PX4_SIM_MODEL=${PX4_SIM_MODEL:-gz_x500_mono_cam}
-      - PX4_GZ_WORLD=${PX4_GZ_WORLD:-lawn}
+      - PX4_GZ_WORLD=${PX4_GZ_WORLD:-forest}
 
     volumes:
       # Native X11 socket — this is what puts windows on your screen.

@@ -4,13 +4,21 @@
     <static>true</static>
     <link name="link">
       <visual name="visual">
+        <cast_shadows>false</cast_shadows>
         <geometry>
           <!-- fixed: original pointed at a non-existent mesh/fir_tree.glb -->
           <mesh><uri>model://fir_tree/lhpine.glb</uri></mesh>
         </geometry>
       </visual>
-      <!-- ponytail: visual-only; the original collision mesh wasn't in the zip.
-           Add a cylinder collision if the drone must hit trees. -->
+      <!-- Collision: cylinder over the trunk + dense inner canopy. Measured mesh
+           extent is ~25 m wide x 53 m tall (a large pine); radius here is the solid
+           core, widen toward ~12.5 m if the drone clips outer branches. -->
+      <collision name="collision">
+        <pose>0 0 26.5 0 0 0</pose>
+        <geometry>
+          <cylinder><radius>7.0</radius><length>53.0</length></cylinder>
+        </geometry>
+      </collision>
     </link>
   </model>
 </sdf>

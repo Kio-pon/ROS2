@@ -42,7 +42,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     # Default drone/world — override per-run from docker-compose or `-e`
     PX4_SYS_AUTOSTART=4010 \
     PX4_SIM_MODEL=gz_x500_mono_cam \
-    PX4_GZ_WORLD=lawn
+    PX4_GZ_WORLD=forest
 
 # =============================================================================
 # LAYER 1 — Core system, GUI toolkits, and OpenGL/EGL client libraries
@@ -152,16 +152,22 @@ RUN { \
 # =============================================================================
 COPY --chown=${USER_UID}:${USER_GID} drone_controller/ ${HOME}/px4_ros2_ws/src/drone_controller/
 COPY --chown=${USER_UID}:${USER_GID} first/            ${HOME}/px4_ros2_ws/src/first/
+COPY --chown=${USER_UID}:${USER_GID} custom_models/    ${HOME}/custom_models/
+COPY --chown=${USER_UID}:${USER_GID} custom_worlds/    ${HOME}/custom_worlds/
+COPY --chown=${USER_UID}:${USER_GID} custom_airframes/ ${HOME}/custom_airframes/
+COPY --chown=${USER_UID}:${USER_GID} missions/         ${HOME}/missions/
+COPY --chown=${USER_UID}:${USER_GID} custom_worlds/*.sdf ${HOME}/PX4-Autopilot/Tools/simulation/gz/worlds/
 
 RUN cd ${HOME}/px4_ros2_ws && \
     bash -c "source /opt/ros/jazzy/setup.bash && source install/setup.bash && \
              colcon build --symlink-install --packages-select drone_controller first"
 
-# Launcher scripts + entrypoint (strip any CRLF from Windows-edited files)
-COPY --chown=${USER_UID}:${USER_GID} run_*.sh      ${HOME}/launchers/
-COPY --chown=${USER_UID}:${USER_GID} entrypoint.sh ${HOME}/entrypoint.sh
-RUN sed -i 's/\r$//' ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh && \
-    chmod +x         ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh
+# Launcher scripts + GUI + entrypoint (strip any CRLF from Windows-edited files)
+COPY --chown=${USER_UID}:${USER_GID} run_*.sh         ${HOME}/launchers/
+COPY --chown=${USER_UID}:${USER_GID} launcher_gui.py  ${HOME}/launchers/launcher_gui.py
+COPY --chown=${USER_UID}:${USER_GID} entrypoint.sh    ${HOME}/entrypoint.sh
+RUN sed -i 's/\r$//' ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh ${HOME}/launchers/*.py && \
+    chmod +x         ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh ${HOME}/launchers/*.py
 
 WORKDIR ${HOME}
 ENTRYPOINT ["/home/student/entrypoint.sh"]

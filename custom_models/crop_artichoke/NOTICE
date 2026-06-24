@@ -1,0 +1,11 @@
+crop_artichoke mesh (meshes/carciofo1.obj, .mtl) and textures are the "artichoke1"
+model from:
+
+    https://github.com/PIC4SeR/AutomaticRowCropGenerator  (branch: master)
+    MIT License (repo README: "All the code and models inside this repository are
+    released under the MIT Licence.")
+
+Changes: "texture foglia.jpg" renamed to "texture_foglia.jpg" (spaces break
+OBJ/MTL loading) with the .mtl patched to match; SDF wrapper rewritten
+(model://artichoke1 -> model://crop_artichoke, SDF 1.6 -> 1.9, mesh collision ->
+box, cast_shadows off). Textures may be downscaled to <=1024 px. Geometry unmodified.

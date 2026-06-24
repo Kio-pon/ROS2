@@ -1,0 +1,10 @@
+crop_zucchini mesh (meshes/zucchina1.obj, .mtl) and textures are the "zucchini1"
+model from:
+
+    https://github.com/PIC4SeR/AutomaticRowCropGenerator  (branch: master)
+    MIT License (repo README: "All the code and models inside this repository are
+    released under the MIT Licence.")
+
+Changes: SDF wrapper rewritten (model://zucchini1 -> model://crop_zucchini, SDF
+1.6 -> 1.9, mesh collision -> box, cast_shadows off). Textures may be downscaled
+to <=1024 px by optimize_assets.py. Geometry unmodified.

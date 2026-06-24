@@ -1,0 +1,9 @@
+crop_chard mesh (meshes/bieta1.obj, .mtl) and textures (bietola-800x800.jpg,
+gambieta.jpg) are the "chard1" model from:
+
+    https://github.com/PIC4SeR/AutomaticRowCropGenerator  (branch: master)
+    MIT License (per the repository README: "All the code and models inside this
+    repository are released under the MIT Licence.")
+
+Only the SDF wrapper was changed (model://chard1 -> model://crop_chard, SDF
+1.6 -> 1.9, mesh collision replaced with a box). Mesh and textures unmodified.
