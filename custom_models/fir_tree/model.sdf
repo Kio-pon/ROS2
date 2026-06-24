@@ -10,13 +10,15 @@
           <mesh><uri>model://fir_tree/lhpine.glb</uri></mesh>
         </geometry>
       </visual>
-      <!-- Collision: cylinder over the trunk + dense inner canopy. Measured mesh
-           extent is ~25 m wide x 53 m tall (a large pine); radius here is the solid
-           core, widen toward ~12.5 m if the drone clips outer branches. -->
+      <!-- Collision: THIN cylinder over the trunk only, NOT the branches. The
+           visual canopy is ~25 m wide, but the old 7 m radius meant the drone
+           "crashed out of nowhere" while still metres away from anything solid.
+           Radius 0.9 m (~1.8 m trunk for a big pine). Bump up only if you want
+           branch collisions back. -->
       <collision name="collision">
         <pose>0 0 26.5 0 0 0</pose>
         <geometry>
-          <cylinder><radius>7.0</radius><length>53.0</length></cylinder>
+          <cylinder><radius>0.9</radius><length>53.0</length></cylinder>
         </geometry>
       </collision>
     </link>

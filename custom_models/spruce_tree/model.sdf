@@ -11,13 +11,14 @@
           <mesh><uri>model://spruce_tree/spruce_tree.glb</uri></mesh>
         </geometry>
       </visual>
-      <!-- Collision: cylinder over the trunk + dense inner canopy. Measured mesh
-           extent is ~8.4 m wide x 17.4 m tall; radius here is the solid core, widen
-           toward ~4.2 m if the drone clips outer branches. -->
+      <!-- Collision: THIN cylinder over the trunk only, NOT the branches. The
+           visual canopy is ~8.4 m wide, but a drone should be able to fly between
+           the branches and only crash if it hits the actual trunk. Radius 0.4 m
+           (~0.8 m trunk). Bump it up only if you want branch collisions back. -->
       <collision name="collision">
         <pose>0 0 8.7 0 0 0</pose>
         <geometry>
-          <cylinder><radius>2.5</radius><length>17.4</length></cylinder>
+          <cylinder><radius>0.4</radius><length>17.4</length></cylinder>
         </geometry>
       </collision>
     </link>

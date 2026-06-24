@@ -77,12 +77,45 @@ MicroXRCEAgent udp4 -p 8888 > ~/dds_agent.log 2>&1 &
 export PX4_SYS_AUTOSTART="${PX4_SYS_AUTOSTART:-4010}"
 export PX4_SIM_MODEL="${PX4_SIM_MODEL:-gz_x500_mono_cam}"
 export PX4_GZ_WORLD="${PX4_GZ_WORLD:-forest}"
-export PX4_GZ_MODEL_POSE="${PX4_GZ_MODEL_POSE:-0,0,5.8}"
+
+# Spawn pose: drop the drone right ONTO the ground (a few cm up), not 5 m above
+# it. The ground height at the origin depends on the world's heightmap terrain
+# (forest ~5.5 m, farmland ~1.0 m, row_crops ~0.7 m), so a single hardcoded z
+# used to fling the drone metres into the air on the flatter worlds. Compute it
+# from the chosen world; fall back to the old forest value only if that fails.
+if [ -z "$PX4_GZ_MODEL_POSE" ]; then
+    SPAWN_WORLD_SDF=""
+    if [ -n "$LAUNCHER_WORLD_FILE" ] && [ -f "$LAUNCHER_WORLD_FILE" ]; then
+        SPAWN_WORLD_SDF="$LAUNCHER_WORLD_FILE"
+    else
+        for d in "$SELF_DIR/custom_worlds" "$HOME/custom_worlds"; do
+            [ -f "$d/$PX4_GZ_WORLD.sdf" ] && SPAWN_WORLD_SDF="$d/$PX4_GZ_WORLD.sdf" && break
+        done
+    fi
+    SPAWN_Z=""
+    if [ -n "$SPAWN_WORLD_SDF" ] && [ -f "$SELF_DIR/place_on_terrain.py" ]; then
+        SPAWN_Z=$(python3 "$SELF_DIR/place_on_terrain.py" --spawn-z "$SPAWN_WORLD_SDF" 2>/dev/null)
+    fi
+    [ -z "$SPAWN_Z" ] && SPAWN_Z=5.8   # safe fallback (forest)
+    export PX4_GZ_MODEL_POSE="0,0,$SPAWN_Z"
+    echo "Spawn pose: 0,0,$SPAWN_Z  (ground-level for world '$PX4_GZ_WORLD')"
+fi
 export GZ_CONFIG_PATH="/usr/share/gz:${GZ_CONFIG_PATH:-}"
 unset PX4_GZ_MODEL_NAME
 # NOTE: use ${VAR-default} (no colon) so an explicit empty HEADLESS="" from the
 # launcher (= "show Gazebo GUI") is preserved; only default to headless when UNSET.
 export HEADLESS="${HEADLESS-1}"
+
+# Grass texture for the farmland ground is procedural (kept out of git as a
+# binary); generate it on first run if it isn't there yet.
+for base in "$SELF_DIR" "$HOME"; do
+    GEN="$base/tools/gen_grass_texture.py"
+    GRASS="$base/custom_models/farmland_terrain/grass_diffuse.png"
+    if [ -f "$GEN" ] && [ ! -f "$GRASS" ]; then
+        echo "Generating farmland grass texture..."
+        python3 "$GEN" >/dev/null 2>&1 || echo "WARN: could not generate grass texture (PIL missing?)"
+    fi
+done
 
 # Make custom scenery available (works both in Docker and native)
 for d in "$HOME/custom_models" "$SELF_DIR/custom_models"; do

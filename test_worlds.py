@@ -16,11 +16,19 @@ heightmap is valid with 1 texture + 0 blend (sdformat heightmap_shape.sdf,
 import os, re, glob, sys, shutil, subprocess
 import xml.etree.ElementTree as ET
 from PIL import Image
-from place_on_terrain import load_terrain, model_name, MODELS
+from place_on_terrain import load_terrain, model_name, MODELS, SPAWN_CLEARANCE
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 WORLDS = os.path.join(ROOT, "custom_worlds")
 PASS, FAIL = "  ok  ", " FAIL "
+
+def ensure_generated_assets():
+    """The farmland grass texture is procedural (not committed); generate it so
+    the reference check below finds it, exactly as run_all.sh does at launch."""
+    grass = os.path.join(MODELS, "farmland_terrain", "grass_diffuse.png")
+    if not os.path.exists(grass):
+        subprocess.run([sys.executable, os.path.join(ROOT, "tools", "gen_grass_texture.py")],
+                       check=True, capture_output=True)
 
 def resolve(uri):  # model://name/rest... -> custom_models/name/rest...
     rel = uri.replace("model://", "")
@@ -90,15 +98,18 @@ def t_on_terrain():
             assert abs(z - expect) < 0.05, \
                 f"{os.path.basename(w)}: model at ({x},{y}) z={z} but terrain={expect:.3f} (run place_on_terrain.py)"
 
-# --- 5. spawn pose clears the terrain at the origin -----------------------
+# --- 5. spawn pose lands ON the ground at the origin (not buried, not dropped) -
 def t_spawn_clears_origin():
+    # run_all.sh must compute the spawn z per-world from the terrain, not hardcode
+    # one value (which used to fling the drone ~5 m up on the flatter worlds).
     run = open(os.path.join(ROOT, "run_all.sh")).read()
-    m = re.search(r'PX4_GZ_MODEL_POSE:-([\d.,-]+)', run)
-    assert m, "run_all.sh has no PX4_GZ_MODEL_POSE default"
-    spawn_z = float(m.group(1).split(",")[2])
+    assert "--spawn-z" in run, "run_all.sh no longer computes a terrain-aware spawn z"
     for w in glob.glob(os.path.join(WORLDS, "*.sdf")):
         h0 = load_terrain(open(w).read())(0, 0)
-        assert spawn_z > h0, f"{os.path.basename(w)}: spawn z={spawn_z} <= origin terrain {h0:.2f} (drone buried)"
+        spawn_z = h0 + SPAWN_CLEARANCE                 # what place_on_terrain prints
+        assert spawn_z > h0, f"{os.path.basename(w)}: spawn z={spawn_z:.2f} <= origin {h0:.2f} (buried)"
+        assert spawn_z - h0 < 1.0, \
+            f"{os.path.basename(w)}: spawn is {spawn_z - h0:.2f} m above ground (drone gets dropped, want <1 m)"
 
 # --- 6. optional: gz's own validator on each model.sdf --------------------
 def t_gz_check():
@@ -126,6 +137,7 @@ def t_asset_budget():
     assert total / 1e6 <= 40, f"custom_models is {total/1e6:.0f}MB (>40MB budget)"
 
 if __name__ == "__main__":
+    ensure_generated_assets()
     rc = 0
     rc += check("heightmap PNGs are 2^n+1 square", t_heightmaps)
     rc += check("all SDF files are well-formed XML", t_xml)

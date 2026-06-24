@@ -8,3 +8,7 @@ build/
 install/
 log/
 *.log
+
+# Procedurally generated (see tools/gen_grass_texture.py); not committed as binary
+custom_models/farmland_terrain/grass_diffuse.png
+custom_models/farmland_terrain/grass_normal.png

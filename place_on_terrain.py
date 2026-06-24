@@ -16,6 +16,11 @@ from PIL import Image
 ROOT = os.path.dirname(os.path.abspath(__file__))
 MODELS = os.path.join(ROOT, "custom_models")
 
+# Drone spawn clearance: body origin this far above the ground at the world
+# origin, so the x500 sits a few cm over its landing gear instead of being
+# dropped from 5 m. ~0.25 m -> legs ~7 cm above ground, then it settles gently.
+SPAWN_CLEARANCE = 0.25
+
 def model_name(uri):  # model://forest_terrain/foo.png -> forest_terrain
     return uri.replace("model://", "").split("/")[0]
 
@@ -66,11 +71,26 @@ def snap(world_path):
     open(world_path, "w").write(out)
     print(f"snapped models in {world_path}")
 
+def spawn_z(world_path):
+    """Print the drone spawn height for a world: terrain height at the origin
+    (0,0) plus SPAWN_CLEARANCE. Falls back to flat-ground clearance if the world
+    has no heightmap terrain. Used by run_all.sh to set PX4_GZ_MODEL_POSE."""
+    text = open(world_path).read()
+    try:
+        height = load_terrain(text)
+        z = height(0.0, 0.0) + SPAWN_CLEARANCE
+    except SystemExit:
+        z = SPAWN_CLEARANCE  # flat ground / no terrain include
+    print(f"{z:.3f}")
+
+
 if __name__ == "__main__":
     # self-check: forest origin pixel (175/255*8) ~= 5.49 m
     if "--selfcheck" in sys.argv:
         h = make_sampler(os.path.join(MODELS, "forest_terrain", "bc_terrain_heightmap_257.png"), 200, 200, 8, 0)
         assert abs(h(0, 0) - 5.49) < 0.2, h(0, 0)
         print("ok", h(0, 0))
+    elif "--spawn-z" in sys.argv:
+        spawn_z(sys.argv[sys.argv.index("--spawn-z") + 1])
     else:
         snap(sys.argv[1])

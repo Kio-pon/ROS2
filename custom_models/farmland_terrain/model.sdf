@@ -4,7 +4,8 @@
     <static>true</static>
     <link name="link">
       <!-- size = footprint_x footprint_y max_height (m). Max 1.5 m = gentle
-           rolling farmland, not bumpy forest. Reuses forest_terrain assets. -->
+           rolling farmland, not bumpy forest. Reuses forest_terrain's heightmap;
+           texture is a green grass field (see tools/gen_grass_texture.py). -->
       <collision name="collision">
         <geometry>
           <heightmap>
@@ -20,9 +21,9 @@
           <heightmap>
             <use_terrain_paging>false</use_terrain_paging>
             <texture>
-              <diffuse>model://forest_terrain/bc_moss_rock_diffuse.png</diffuse>
-              <normal>model://forest_terrain/bc_moss_rock_normal.png</normal>
-              <size>10</size>
+              <diffuse>model://farmland_terrain/grass_diffuse.png</diffuse>
+              <normal>model://farmland_terrain/grass_normal.png</normal>
+              <size>8</size>
             </texture>
             <uri>model://forest_terrain/bc_terrain_heightmap_257.png</uri>
             <size>200 200 1.5</size>
