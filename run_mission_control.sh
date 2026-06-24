@@ -8,10 +8,10 @@
 echo "================================================="
 echo "Cleaning up any old simulator or ROS 2 processes..."
 echo "================================================="
-pkill -f px4 || true
-pkill -f MicroXRCEAgent || true
-pkill -f ruby || true
-pkill -f gz || true
+pkill -9 -f px4 || true
+pkill -9 -f MicroXRCEAgent || true
+pkill -9 -f ruby || true
+pkill -9 -f gz || true
 sleep 1
 
 # 1. Start the Micro-XRCE-DDS Agent in the background

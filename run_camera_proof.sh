@@ -13,13 +13,13 @@
 echo "================================================="
 echo "Cleaning up any old simulator / ROS 2 / bridge processes..."
 echo "================================================="
-pkill -f px4 || true
-pkill -f MicroXRCEAgent || true
-pkill -f ruby || true
-pkill -f gz || true
-pkill -f image_bridge || true
-pkill -f parameter_bridge || true
-pkill -f camera_proof || true
+pkill -9 -f px4 || true
+pkill -9 -f MicroXRCEAgent || true
+pkill -9 -f ruby || true
+pkill -9 -f gz || true
+pkill -9 -f image_bridge || true
+pkill -9 -f parameter_bridge || true
+pkill -9 -f camera_proof || true
 sleep 1
 
 # 1. DDS agent

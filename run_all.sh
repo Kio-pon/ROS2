@@ -41,13 +41,13 @@ fi
 
 # ── 1. Cleanup old processes ─────────────────────────────────────────────
 echo "Cleaning up any old simulator / ROS 2 / bridge processes..."
-pkill -f px4 || true
-pkill -f MicroXRCEAgent || true
-pkill -f ruby || true
-pkill -f gz || true
-pkill -f image_bridge || true
-pkill -f parameter_bridge || true
-pkill -f mission_control || true
+pkill -9 -f px4 || true
+pkill -9 -f MicroXRCEAgent || true
+pkill -9 -f ruby || true
+pkill -9 -f gz || true
+pkill -9 -f image_bridge || true
+pkill -9 -f parameter_bridge || true
+pkill -9 -f mission_control || true
 sleep 1
 
 # ── 2. Source launcher settings (or use defaults) ────────────────────────
@@ -161,6 +161,11 @@ $P set NAV_RCL_ACT  0 > /dev/null 2>&1   # RC loss: no failsafe
 $P set COM_RC_IN_MODE 4 > /dev/null 2>&1 # stick input disabled (autonomous/offboard)
 $P set COM_RCL_EXCEPT 4 > /dev/null 2>&1 # allow offboard with no RC
 $P set COM_ARM_WO_GPS 1 > /dev/null 2>&1 # arm without GPS lock
+# Heading/EKF: a stationary SITL drone gets "Preflight Fail: no heading reference"
+# because the EKF rejects the simulated magnetometer. Force mag heading and skip
+# the field-strength gate so a yaw reference is available -> arming works.
+$P set EKF2_MAG_CHECK 0 > /dev/null 2>&1  # don't reject mag on field-strength mismatch
+$P set EKF2_MAG_TYPE  1 > /dev/null 2>&1  # use magnetometer for heading
 
 # 5. Wait for the simulator + sensors to come up
 echo "Waiting 15 seconds for the simulator and camera sensor to start..."
