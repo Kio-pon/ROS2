@@ -121,14 +121,22 @@ done
 for d in "$HOME/custom_models" "$SELF_DIR/custom_models"; do
     [ -d "$d" ] && export GZ_SIM_RESOURCE_PATH="$d:${GZ_SIM_RESOURCE_PATH:-}"
 done
+
+# Regenerate the world based on the selected density
+GEN_SCRIPT="$SELF_DIR/gen_$PX4_GZ_WORLD.py"
+if [ -f "$GEN_SCRIPT" ]; then
+    echo "Regenerating $PX4_GZ_WORLD with density=${DENSITY:-medium}..."
+    python3 "$GEN_SCRIPT" --density "${DENSITY:-medium}"
+fi
+
 for d in "$HOME/custom_worlds" "$SELF_DIR/custom_worlds"; do
     [ -d "$d" ] && cp -u "$d"/*.sdf "$HOME/PX4-Autopilot/Tools/simulation/gz/worlds/" 2>/dev/null || true
 done
 
 # Copy the launcher's patched world file into PX4's worlds directory
 if [ -n "$LAUNCHER_WORLD_FILE" ] && [ -f "$LAUNCHER_WORLD_FILE" ]; then
-    echo "Installing patched world: $LAUNCHER_WORLD_FILE"
-    cp -f "$LAUNCHER_WORLD_FILE" "$HOME/PX4-Autopilot/Tools/simulation/gz/worlds/" 2>/dev/null || true
+    echo "Installing patched world: $LAUNCHER_WORLD_FILE as $PX4_GZ_WORLD.sdf"
+    cp -f "$LAUNCHER_WORLD_FILE" "$HOME/PX4-Autopilot/Tools/simulation/gz/worlds/$PX4_GZ_WORLD.sdf" 2>/dev/null || true
 fi
 
 # 2c. Right-size the drone camera (biggest GPU cost: it renders offscreen every
@@ -168,8 +176,8 @@ $P set EKF2_MAG_CHECK 0 > /dev/null 2>&1  # don't reject mag on field-strength m
 $P set EKF2_MAG_TYPE  1 > /dev/null 2>&1  # use magnetometer for heading
 
 # 5. Wait for the simulator + sensors to come up
-echo "Waiting 15 seconds for the simulator and camera sensor to start..."
-for i in {15..1}; do echo -n "$i... "; sleep 1; done
+echo "Waiting 30 seconds for the simulator and camera sensor to start..."
+for i in {30..1}; do echo -n "$i... "; sleep 1; done
 echo -e "\nInitialization complete!"
 
 # 6. Sourcing workspace
@@ -180,7 +188,7 @@ source ~/px4_ros2_ws/install/setup.bash
 # 7. Auto-detect the camera's gz topic
 echo "Detecting the camera topic from Gazebo..."
 CAM_TOPIC=""
-for _ in {1..15}; do
+for _ in {1..30}; do
     for t in $(gz topic -l 2>/dev/null | grep -iE 'image|camera'); do
         case "$t" in *camera_info*|*depth*) continue ;; esac
         if gz topic -i -t "$t" 2>/dev/null | grep -q 'gz.msgs.Image'; then

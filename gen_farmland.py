@@ -5,13 +5,30 @@ Edit the grid constants and re-run, then z gets fixed by place_on_terrain.py
 (this script writes z=0 placeholders). Kept separate from the world file so the
 layout is regenerable instead of hand-edited.
 """
-import os
+import os, sys, argparse
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import place_on_terrain as pot
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(ROOT, "custom_worlds", "farmland.sdf")
 
-ROWS_X = [-7.5, -4.5, -1.5, 1.5, 4.5, 7.5]   # crop rows (m), 3 m apart
-PLANTS_Y = range(-8, 9, 2)                     # plant spacing down each row
+# Density presets
+DENSITY_CONFIG = {
+    "sparse": (
+        [-4.5, 0.0, 4.5],             # ROWS_X (3 rows)
+        list(range(-8, 9, 4))         # PLANTS_Y (5 plants per row)
+    ),
+    "medium": (
+        [-7.5, -4.5, -1.5, 1.5, 4.5, 7.5],  # ROWS_X (6 rows)
+        list(range(-8, 9, 2))         # PLANTS_Y (9 plants per row)
+    ),
+    "dense": (
+        [-9.0, -7.5, -6.0, -4.5, -3.0, -1.5, 0.0, 1.5, 3.0, 4.5, 6.0, 7.5, 9.0], # ROWS_X (13 rows)
+        list(range(-9, 10, 1))        # PLANTS_Y (19 plants per row)
+    )
+}
+
 BALES = [(-25, 25, 0.6), (22, -20, 1.9), (30, 18, 0.2), (-28, -16, 2.7)]
 
 HEAD = """<?xml version="1.0" ?>
@@ -49,10 +66,16 @@ HEAD = """<?xml version="1.0" ?>
 """
 
 def main():
-    lines = [HEAD, "\n    <!-- Tomato field: rows of crop_tomato plants. z set by place_on_terrain.py -->\n"]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--density", choices=["sparse", "medium", "dense"], default="medium")
+    args = parser.parse_args()
+
+    rows_x, plants_y = DENSITY_CONFIG[args.density]
+
+    lines = [HEAD, f"\n    <!-- Tomato field: {args.density} density. z set by place_on_terrain.py -->\n"]
     i = 0
-    for x in ROWS_X:
-        for y in PLANTS_Y:
+    for x in rows_x:
+        for y in plants_y:
             yaw = (i * 1.3) % 6.28  # vary heading so plants don't look cloned
             lines.append(f'    <include><name>tomato_{i}</name><uri>model://crop_tomato</uri>'
                          f'<pose>{x} {y} 0 0 0 {yaw:.2f}</pose></include>\n')
@@ -62,8 +85,10 @@ def main():
         lines.append(f'    <include><name>hay_bale_{j}</name><uri>model://hay_bale</uri>'
                      f'<pose>{x} {y} 0 0 0 {yaw}</pose></include>\n')
     lines.append("  </world>\n</sdf>\n")
+    
     open(OUT, "w").write("".join(lines))
-    print(f"wrote {OUT}: {i} tomato plants, {len(BALES)} bales")
+    print(f"wrote {OUT}: {i} tomato plants, {len(BALES)} bales, density={args.density}")
+    pot.snap(OUT)
 
 if __name__ == "__main__":
     main()

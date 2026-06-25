@@ -165,6 +165,9 @@ RUN cd ${HOME}/px4_ros2_ws && \
 # Launcher scripts + GUI + entrypoint (strip any CRLF from Windows-edited files)
 COPY --chown=${USER_UID}:${USER_GID} run_*.sh         ${HOME}/launchers/
 COPY --chown=${USER_UID}:${USER_GID} launcher_gui.py  ${HOME}/launchers/launcher_gui.py
+COPY --chown=${USER_UID}:${USER_GID} gen_*.py         ${HOME}/launchers/
+COPY --chown=${USER_UID}:${USER_GID} place_on_terrain.py ${HOME}/launchers/
+COPY --chown=${USER_UID}:${USER_GID} tools/            ${HOME}/tools/
 COPY --chown=${USER_UID}:${USER_GID} entrypoint.sh    ${HOME}/entrypoint.sh
 RUN sed -i 's/\r$//' ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh ${HOME}/launchers/*.py && \
     chmod +x         ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh ${HOME}/launchers/*.py

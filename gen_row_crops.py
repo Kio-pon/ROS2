@@ -4,11 +4,11 @@
 Separate beds of different crops (chard / zucchini / artichoke), each spaced to
 its plant size, with a centre dirt path. Edit BEDS and re-run; z is then fixed by
 place_on_terrain.py (this writes z=0 placeholders).
-
-ponytail: plant count is the perf knob. Each bed is (model, x0, x1, row_step,
-plant_step). Widen the steps or drop a bed for a weaker GPU.
 """
-import os
+import os, sys, argparse
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import place_on_terrain as pot
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(ROOT, "custom_worlds", "row_crops.sdf")
@@ -16,13 +16,29 @@ Y0, Y1 = -6.0, 6.0
 BALES = [(-11, 7, 0.5), (11, -7, 1.2)]
 
 # (crop model, x_start, x_end, row spacing, in-row spacing)
-BEDS = [
-    ("crop_chard",     -9.0, -6.0, 0.75, 0.6),   # leafy low rows (dense)
-    ("crop_zucchini",  -4.5, -1.5, 1.5,  1.5),   # sprawling, wider spacing
-    # centre dirt path runs through x in (-1.5, 1.5)
-    ("crop_artichoke",  1.5,  4.5, 1.5,  1.6),   # tall bushy
-    ("crop_chard",      5.5,  9.0, 0.75, 0.6),
-]
+DENSITY_CONFIG = {
+    "sparse": [
+        ("crop_chard",     -8.0, -7.0, 1.5, 1.2),
+        ("crop_zucchini",  -4.5, -3.0, 2.0, 2.0),
+        # centre dirt path
+        ("crop_artichoke",  3.0,  4.5, 2.0, 2.0),
+        ("crop_chard",      7.0,  8.0, 1.5, 1.2),
+    ],
+    "medium": [
+        ("crop_chard",     -9.0, -6.0, 0.75, 0.6),   # leafy low rows (dense)
+        ("crop_zucchini",  -4.5, -1.5, 1.5,  1.5),   # sprawling, wider spacing
+        # centre dirt path
+        ("crop_artichoke",  1.5,  4.5, 1.5,  1.6),   # tall bushy
+        ("crop_chard",      5.5,  9.0, 0.75, 0.6),
+    ],
+    "dense": [
+        ("crop_chard",     -9.0, -6.0, 0.5, 0.4),
+        ("crop_zucchini",  -4.5, -1.5, 1.0,  1.0),
+        # centre dirt path
+        ("crop_artichoke",  1.5,  4.5, 1.0,  1.0),
+        ("crop_chard",      5.5,  9.0, 0.5, 0.4),
+    ]
+}
 
 HEAD = """<?xml version="1.0" ?>
 <sdf version="1.9">
@@ -65,9 +81,15 @@ def frange(a, b, step):
     return out
 
 def main():
-    parts = [HEAD, "\n    <!-- Mixed vegetable beds (chard / zucchini / artichoke), centre dirt path. z via place_on_terrain.py -->\n"]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--density", choices=["sparse", "medium", "dense"], default="medium")
+    args = parser.parse_args()
+
+    beds = DENSITY_CONFIG[args.density]
+
+    parts = [HEAD, f"\n    <!-- Mixed vegetable beds: {args.density} density. z via place_on_terrain.py -->\n"]
     i = 0
-    for model, x0, x1, rstep, pstep in BEDS:
+    for model, x0, x1, rstep, pstep in beds:
         for x in frange(x0, x1, rstep):
             for y in frange(Y0, Y1, pstep):
                 yaw = (i * 0.7) % 6.28
@@ -79,8 +101,10 @@ def main():
         parts.append(f'    <include><name>hay_bale_{j}</name><uri>model://hay_bale</uri>'
                      f'<pose>{x} {y} 0 0 0 {yaw}</pose></include>\n')
     parts.append("  </world>\n</sdf>\n")
+    
     open(OUT, "w").write("".join(parts))
-    print(f"wrote {OUT}: {i} plants across {len(BEDS)} beds, {len(BALES)} bales")
+    print(f"wrote {OUT}: {i} plants, {len(BALES)} bales, density={args.density}")
+    pot.snap(OUT)
 
 if __name__ == "__main__":
     main()

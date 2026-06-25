@@ -12,3 +12,10 @@ log/
 # Procedurally generated (see tools/gen_grass_texture.py); not committed as binary
 custom_models/farmland_terrain/grass_diffuse.png
 custom_models/farmland_terrain/grass_normal.png
+
+# Virtual environments and local settings
+.venv/
+.drone_launch.env
+.*.sdf
+scratch/
+_gui_diag.sh

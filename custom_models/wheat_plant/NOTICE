@@ -1,0 +1,9 @@
+wheat_plant mesh (meshes/wheat.glb) is "Wheat - FREE" by Yaroslav Karas:
+
+    https://sketchfab.com/3d-models/wheat-free-ddff74ac0661414a9478bd4d7581c854
+    Licensed under Creative Commons Attribution (CC-BY 4.0).
+    "Wheat - FREE" by Yaroslav Karas is licensed under CC Attribution.
+
+Commercial use allowed; author must be credited (this file satisfies that).
+Only the SDF wrapper + a uniform scale were added, and optimize_assets.py may
+have downscaled the embedded textures. Mesh geometry is unmodified.

@@ -23,7 +23,12 @@ PRESETS = {
     "Mild":                (False, 500, 30, 960, 720, 20),
     "None (Full Quality)": (True, 1000, 50, 1280, 960, 30),
 }
-NICE = {"forest": "Forest", "farmland": "Tomato Farmland", "row_crops": "Mixed Vegetables"}
+NICE = {
+    "forest": "Forest",
+    "farmland": "Tomato Farmland",
+    "row_crops": "Mixed Vegetables",
+    "wheat_field": "Pakistani Farmland (Wheat)"
+}
 HZ_OPTS, IT_OPTS = [250, 500, 1000], [16, 30, 50]
 CAM_OPTS = [(640, 480, 15), (960, 720, 20), (1280, 960, 30)]
 
@@ -60,12 +65,20 @@ def patch_world_sdf(text, shadows_on, physics_hz, solver_iters):
 
 
 def write_outputs(cfg):
+    import subprocess
+    gen_script = os.path.join(ROOT, f"gen_{cfg['world_name']}.py")
+    if os.path.exists(gen_script):
+        density = cfg.get("density", "medium")
+        print(f"Regenerating {cfg['world_name']} with density={density}...")
+        subprocess.run([sys.executable, gen_script, "--density", density], check=True)
+
     text = open(cfg["world_path"]).read()
     patched = patch_world_sdf(text, cfg["shadows"], cfg["physics_hz"], cfg["solver_iters"])
     world_out = os.path.join(ROOT, f".{cfg['world_name']}.sdf")
     open(world_out, "w", newline="\n").write(patched)
     with open(ENV_FILE, "w", newline="\n") as f:
         f.write(f'export PX4_GZ_WORLD="{cfg["world_name"]}"\n')
+        f.write(f'export DENSITY="{cfg.get("density", "medium")}"\n')
         f.write(f'export HEADLESS="{"" if cfg["show_gui"] else "1"}"\n')
         f.write(f'export LAUNCHER_WORLD_FILE="{world_out}"\n')
         f.write(f'export CAM_W="{cfg["cam"][0]}"\nexport CAM_H="{cfg["cam"][1]}"\nexport CAM_HZ="{cfg["cam"][2]}"\n')
@@ -73,7 +86,7 @@ def write_outputs(cfg):
 
 
 def summarize(cfg):
-    print(f"\n  world={cfg['world_name']}  shadows={'on' if cfg['shadows'] else 'off'}  "
+    print(f"\n  world={cfg['world_name']}  density={cfg.get('density', 'medium')}  shadows={'on' if cfg['shadows'] else 'off'}  "
           f"physics={cfg['physics_hz']}Hz  solver={cfg['solver_iters']}  "
           f"camera={cfg['cam'][0]}x{cfg['cam'][1]}@{cfg['cam'][2]}  "
           f"gazebo_gui={'yes' if cfg['show_gui'] else 'no'}\n  Launching...\n")
@@ -111,6 +124,8 @@ def run_terminal(worlds):
     print("\n=== PX4 Drone Simulator Launcher ===  (Enter = default, q = cancel)\n")
     print("Scenery:")
     wn, wp = worlds[_ask("Select world", [NICE.get(s, s.title()) for s, _ in worlds])]
+    print("\nDensity:")
+    density = ["sparse", "medium", "dense"][_ask("Select density", ["Sparse", "Medium", "Dense"], default=1)]
     print("\nOptimization:")
     pnames = list(PRESETS) + ["Custom"]
     pi = _ask("Select preset", pnames)
@@ -122,7 +137,7 @@ def run_terminal(worlds):
     else:
         shadows, hz, it, cw, ch, chz = PRESETS[pnames[pi]]; cam = (cw, ch, chz)
     show_gui = _yn("\nShow Gazebo GUI window? (off = faster)")
-    return {"world_name": wn, "world_path": wp, "shadows": shadows, "physics_hz": hz,
+    return {"world_name": wn, "world_path": wp, "density": density, "shadows": shadows, "physics_hz": hz,
             "solver_iters": it, "cam": cam, "show_gui": show_gui}
 
 
@@ -140,7 +155,7 @@ def run_gui(worlds):
 
     root = tk.Tk()                       # raises TclError if no display -> caller falls back
     root.title("PX4 Drone Simulator Launcher")
-    root.geometry("440x520")             # no manual centering (WSLg offsets it off-screen)
+    root.geometry("440x580")             # no manual centering (WSLg offsets it off-screen)
     root.configure(bg=BG)
     result = {"cfg": None}
 
@@ -176,6 +191,11 @@ def run_gui(worlds):
     world_var = tk.StringVar(value=NICE.get(worlds[0][0], worlds[0][0]))
     ttk.Combobox(frm, textvariable=world_var, state="readonly",
                  values=[NICE.get(s, s.title()) for s, _ in worlds]).pack(fill="x", pady=(2, 12))
+
+    ttk.Label(frm, text="DENSITY", style="Sec.TLabel").pack(anchor="w")
+    density_var = tk.StringVar(value="Medium")
+    ttk.Combobox(frm, textvariable=density_var, state="readonly",
+                 values=["Sparse", "Medium", "Dense"]).pack(fill="x", pady=(2, 12))
 
     ttk.Label(frm, text="OPTIMIZATION", style="Sec.TLabel").pack(anchor="w")
     preset_var = tk.StringVar(value=list(PRESETS)[0])
@@ -221,6 +241,7 @@ def run_gui(worlds):
         wn, wp = worlds[[NICE.get(s, s.title()) for s, _ in worlds].index(world_var.get())]
         cw, ch, chz = (int(x) for x in re.split(r"[x@]", cam_var.get()))
         result["cfg"] = {"world_name": wn, "world_path": wp,
+                         "density": density_var.get().lower(),
                          "shadows": bool(shadow_var.get()), "physics_hz": int(hz_var.get()),
                          "solver_iters": int(it_var.get()), "cam": (cw, ch, chz),
                          "show_gui": bool(gui_var.get())}
