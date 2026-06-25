@@ -69,7 +69,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
         -o /usr/share/keyrings/ros-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
-        > /etc/apt/sources.list.d/ros2.list
+        > /etc/apt/sources.list.d/ros2.list && \
+    curl -sSL https://packages.osrfoundation.org/gazebo.gpg \
+        -o /usr/share/keyrings/pkgs.osrfoundation.org-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs.osrfoundation.org-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
+        > /etc/apt/sources.list.d/gazebo-stable.list
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -169,8 +173,8 @@ COPY --chown=${USER_UID}:${USER_GID} gen_*.py         ${HOME}/launchers/
 COPY --chown=${USER_UID}:${USER_GID} place_on_terrain.py ${HOME}/launchers/
 COPY --chown=${USER_UID}:${USER_GID} tools/            ${HOME}/tools/
 COPY --chown=${USER_UID}:${USER_GID} entrypoint.sh    ${HOME}/entrypoint.sh
-RUN sed -i 's/\r$//' ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh ${HOME}/launchers/*.py && \
-    chmod +x         ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh ${HOME}/launchers/*.py
+RUN sed -i 's/\r$//' ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh ${HOME}/launchers/*.py ${HOME}/tools/*.py && \
+    chmod +x         ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh ${HOME}/launchers/*.py ${HOME}/tools/*.py
 
 WORKDIR ${HOME}
 ENTRYPOINT ["/home/student/entrypoint.sh"]

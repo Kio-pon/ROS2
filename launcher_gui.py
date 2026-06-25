@@ -146,12 +146,15 @@ def run_terminal(worlds):
 # --------------------------------------------------------------------------- #
 def run_gui(worlds):
     import tkinter as tk
-    from tkinter import ttk
 
     # modern dark palette (matches mission_control)
     BG, PANEL, INPUT = "#0d1117", "#161b22", "#21262d"
     ACCENT, OK, TEXT, MUTED = "#58a6ff", "#3fb950", "#e6edf3", "#8b949e"
-    FONT = "Ubuntu"
+    FONT = ("Ubuntu", 10)
+    FONT_BOLD = ("Ubuntu", 10, "bold")
+    FONT_H1 = ("Ubuntu", 15, "bold")
+    FONT_SMALL = ("Ubuntu", 9)
+    FONT_SMALL_BOLD = ("Ubuntu", 9, "bold")
 
     root = tk.Tk()                       # raises TclError if no display -> caller falls back
     root.title("PX4 Drone Simulator Launcher")
@@ -159,69 +162,85 @@ def run_gui(worlds):
     root.configure(bg=BG)
     result = {"cfg": None}
 
-    st = ttk.Style(); st.theme_use("clam")
-    st.configure(".", background=BG, foreground=TEXT, font=(FONT, 10))
-    st.configure("TFrame", background=BG)
-    st.configure("Card.TFrame", background=PANEL)
-    st.configure("TLabel", background=BG, foreground=TEXT)
-    st.configure("Card.TLabel", background=PANEL, foreground=TEXT)
-    st.configure("H1.TLabel", background=BG, foreground=TEXT, font=(FONT, 15, "bold"))
-    st.configure("Dim.TLabel", background=BG, foreground=MUTED, font=(FONT, 9))
-    st.configure("Sec.TLabel", background=BG, foreground=ACCENT, font=(FONT, 9, "bold"))
-    st.configure("TCombobox", fieldbackground=INPUT, background=INPUT, foreground=TEXT,
-                 arrowcolor=TEXT, bordercolor="#30363d", selectbackground=INPUT, selectforeground=TEXT)
-    st.map("TCombobox", fieldbackground=[("readonly", INPUT)], foreground=[("readonly", TEXT)])
-    st.configure("TCheckbutton", background=BG, foreground=TEXT)
-    st.map("TCheckbutton", background=[("active", BG)])
-    st.configure("TLabelframe", background=BG, foreground=MUTED, bordercolor="#30363d")
-    st.configure("TLabelframe.Label", background=BG, foreground=MUTED, font=(FONT, 9, "bold"))
-    st.configure("Launch.TButton", background=OK, foreground=BG, font=(FONT, 11, "bold"), borderwidth=0, padding=8)
-    st.map("Launch.TButton", background=[("active", "#4fd061")])
-    st.configure("Ghost.TButton", background=PANEL, foreground=MUTED, borderwidth=0, padding=8)
-    st.map("Ghost.TButton", background=[("active", "#30363d")])
-    for o, v in (("background", INPUT), ("foreground", TEXT), ("selectBackground", ACCENT), ("selectForeground", BG)):
-        root.option_add(f"*TCombobox*Listbox.{o}", v)
-
-    frm = ttk.Frame(root, padding=16)
+    frm = tk.Frame(root, bg=BG, padx=16, pady=16)
     frm.pack(fill="both", expand=True)
-    ttk.Label(frm, text="\U0001F6F8  PX4 Drone Simulator", style="H1.TLabel").pack(anchor="w")
-    ttk.Label(frm, text="Pick a world and how hard to push your GPU", style="Dim.TLabel").pack(anchor="w", pady=(0, 14))
 
-    ttk.Label(frm, text="WORLD", style="Sec.TLabel").pack(anchor="w")
+    tk.Label(frm, text="🛸  PX4 Drone Simulator", font=FONT_H1, bg=BG, fg=TEXT).pack(anchor="w")
+    tk.Label(frm, text="Pick a world and how hard to push your GPU", font=FONT_SMALL, bg=BG, fg=MUTED).pack(anchor="w", pady=(0, 14))
+
+    # WORLD
+    tk.Label(frm, text="WORLD", font=FONT_SMALL_BOLD, bg=BG, fg=ACCENT).pack(anchor="w")
     world_var = tk.StringVar(value=NICE.get(worlds[0][0], worlds[0][0]))
-    ttk.Combobox(frm, textvariable=world_var, state="readonly",
-                 values=[NICE.get(s, s.title()) for s, _ in worlds]).pack(fill="x", pady=(2, 12))
+    world_options = [NICE.get(s, s.title()) for s, _ in worlds]
+    world_menu = tk.OptionMenu(frm, world_var, *world_options)
+    world_menu.config(bg=INPUT, fg=TEXT, activebackground=INPUT, activeforeground=TEXT,
+                      highlightthickness=1, highlightbackground="#30363d", bd=0, font=FONT)
+    world_menu["menu"].config(bg=INPUT, fg=TEXT, activebackground=ACCENT, activeforeground=BG, font=FONT)
+    world_menu.pack(fill="x", pady=(2, 12))
 
-    ttk.Label(frm, text="DENSITY", style="Sec.TLabel").pack(anchor="w")
+    # DENSITY
+    tk.Label(frm, text="DENSITY", font=FONT_SMALL_BOLD, bg=BG, fg=ACCENT).pack(anchor="w")
     density_var = tk.StringVar(value="Medium")
-    ttk.Combobox(frm, textvariable=density_var, state="readonly",
-                 values=["Sparse", "Medium", "Dense"]).pack(fill="x", pady=(2, 12))
+    density_options = ["Sparse", "Medium", "Dense"]
+    density_menu = tk.OptionMenu(frm, density_var, *density_options)
+    density_menu.config(bg=INPUT, fg=TEXT, activebackground=INPUT, activeforeground=TEXT,
+                        highlightthickness=1, highlightbackground="#30363d", bd=0, font=FONT)
+    density_menu["menu"].config(bg=INPUT, fg=TEXT, activebackground=ACCENT, activeforeground=BG, font=FONT)
+    density_menu.pack(fill="x", pady=(2, 12))
 
-    ttk.Label(frm, text="OPTIMIZATION", style="Sec.TLabel").pack(anchor="w")
+    # OPTIMIZATION
+    tk.Label(frm, text="OPTIMIZATION", font=FONT_SMALL_BOLD, bg=BG, fg=ACCENT).pack(anchor="w")
     preset_var = tk.StringVar(value=list(PRESETS)[0])
-    preset_cb = ttk.Combobox(frm, textvariable=preset_var, state="readonly",
-                             values=list(PRESETS) + ["Custom"])
-    preset_cb.pack(fill="x", pady=(2, 12))
+    preset_options = list(PRESETS) + ["Custom"]
+    preset_menu = tk.OptionMenu(frm, preset_var, *preset_options)
+    preset_menu.config(bg=INPUT, fg=TEXT, activebackground=INPUT, activeforeground=TEXT,
+                       highlightthickness=1, highlightbackground="#30363d", bd=0, font=FONT)
+    preset_menu["menu"].config(bg=INPUT, fg=TEXT, activebackground=ACCENT, activeforeground=BG, font=FONT)
+    preset_menu.pack(fill="x", pady=(2, 12))
 
-    adv = ttk.LabelFrame(frm, text="  ADVANCED (Custom preset)  ", padding=10)
-    adv.pack(fill="x", pady=(0, 12))
+    # ADVANCED Frame (Standard tk.LabelFrame styled)
+    adv = tk.LabelFrame(frm, text="  ADVANCED (Custom preset)  ", bg=BG, fg=MUTED, font=FONT_SMALL_BOLD,
+                        bd=1, highlightthickness=0, relief="solid")
+    adv.pack(fill="x", pady=(0, 12), ipady=8, ipadx=8)
+
     shadow_var = tk.BooleanVar(value=False)
-    hz_var = tk.StringVar(value="250"); it_var = tk.StringVar(value="16")
+    hz_var = tk.StringVar(value="250")
+    it_var = tk.StringVar(value="16")
     cam_var = tk.StringVar(value="640x480@15")
-    shadow_cb = ttk.Checkbutton(adv, text="Shadows", variable=shadow_var)
-    shadow_cb.grid(row=0, column=0, columnspan=2, sticky="w", pady=2)
-    ttk.Label(adv, text="Physics Hz", style="TLabel").grid(row=1, column=0, sticky="w", pady=2)
-    hz_cb = ttk.Combobox(adv, textvariable=hz_var, state="readonly", width=12, values=[str(h) for h in HZ_OPTS])
-    hz_cb.grid(row=1, column=1, sticky="e")
-    ttk.Label(adv, text="Solver iters", style="TLabel").grid(row=2, column=0, sticky="w", pady=2)
-    it_cb = ttk.Combobox(adv, textvariable=it_var, state="readonly", width=12, values=[str(i) for i in IT_OPTS])
-    it_cb.grid(row=2, column=1, sticky="e")
-    ttk.Label(adv, text="Camera", style="TLabel").grid(row=3, column=0, sticky="w", pady=2)
-    cam_cb = ttk.Combobox(adv, textvariable=cam_var, state="readonly", width=12,
-                          values=[f"{w}x{h}@{r}" for w, h, r in CAM_OPTS])
-    cam_cb.grid(row=3, column=1, sticky="e")
+
+    shadow_cb = tk.Checkbutton(adv, text="Shadows", variable=shadow_var, bg=BG, fg=TEXT,
+                               activebackground=BG, activeforeground=TEXT, selectcolor=INPUT, font=FONT)
+    shadow_cb.grid(row=0, column=0, columnspan=2, sticky="w", pady=2, padx=4)
+
+    # Physics Hz Dropdown
+    tk.Label(adv, text="Physics Hz", bg=BG, fg=TEXT, font=FONT).grid(row=1, column=0, sticky="w", pady=2, padx=4)
+    hz_options = [str(h) for h in HZ_OPTS]
+    hz_menu = tk.OptionMenu(adv, hz_var, *hz_options)
+    hz_menu.config(bg=INPUT, fg=TEXT, activebackground=INPUT, activeforeground=TEXT,
+                   highlightthickness=1, highlightbackground="#30363d", bd=0, font=FONT)
+    hz_menu["menu"].config(bg=INPUT, fg=TEXT, activebackground=ACCENT, activeforeground=BG, font=FONT)
+    hz_menu.grid(row=1, column=1, sticky="e", pady=2, padx=4)
+
+    # Solver Iters Dropdown
+    tk.Label(adv, text="Solver iters", bg=BG, fg=TEXT, font=FONT).grid(row=2, column=0, sticky="w", pady=2, padx=4)
+    it_options = [str(i) for i in IT_OPTS]
+    it_menu = tk.OptionMenu(adv, it_var, *it_options)
+    it_menu.config(bg=INPUT, fg=TEXT, activebackground=INPUT, activeforeground=TEXT,
+                   highlightthickness=1, highlightbackground="#30363d", bd=0, font=FONT)
+    it_menu["menu"].config(bg=INPUT, fg=TEXT, activebackground=ACCENT, activeforeground=BG, font=FONT)
+    it_menu.grid(row=2, column=1, sticky="e", pady=2, padx=4)
+
+    # Camera Dropdown
+    tk.Label(adv, text="Camera", bg=BG, fg=TEXT, font=FONT).grid(row=3, column=0, sticky="w", pady=2, padx=4)
+    cam_options = [f"{w}x{h}@{r}" for w, h, r in CAM_OPTS]
+    cam_menu = tk.OptionMenu(adv, cam_var, *cam_options)
+    cam_menu.config(bg=INPUT, fg=TEXT, activebackground=INPUT, activeforeground=TEXT,
+                    highlightthickness=1, highlightbackground="#30363d", bd=0, font=FONT)
+    cam_menu["menu"].config(bg=INPUT, fg=TEXT, activebackground=ACCENT, activeforeground=BG, font=FONT)
+    cam_menu.grid(row=3, column=1, sticky="e", pady=2, padx=4)
+
     adv.columnconfigure(0, weight=1)
-    adv_widgets = [shadow_cb, hz_cb, it_cb, cam_cb]
+    adv_widgets = [shadow_cb, hz_menu, it_menu, cam_menu]
 
     def sync(*_):
         custom = preset_var.get() == "Custom"
@@ -229,27 +248,39 @@ def run_gui(worlds):
             w.configure(state="normal" if custom else "disabled")
         if not custom:
             sh, hz, it, cw, ch, chz = PRESETS[preset_var.get()]
-            shadow_var.set(sh); hz_var.set(str(hz)); it_var.set(str(it)); cam_var.set(f"{cw}x{ch}@{chz}")
-    preset_cb.bind("<<ComboboxSelected>>", sync)
+            shadow_var.set(sh)
+            hz_var.set(str(hz))
+            it_var.set(str(it))
+            cam_var.set(f"{cw}x{ch}@{chz}")
+
+    preset_var.trace_add("write", lambda *args: sync())
     sync()
 
     gui_var = tk.BooleanVar(value=False)
-    ttk.Checkbutton(frm, text="Show Gazebo GUI window  (slower on weak GPUs)",
-                    variable=gui_var).pack(anchor="w", pady=(0, 14))
+    gui_cb = tk.Checkbutton(frm, text="Show Gazebo GUI window  (slower on weak GPUs)",
+                            variable=gui_var, bg=BG, fg=TEXT, activebackground=BG,
+                            activeforeground=TEXT, selectcolor=INPUT, font=FONT)
+    gui_cb.pack(anchor="w", pady=(0, 14))
 
     def on_launch():
         wn, wp = worlds[[NICE.get(s, s.title()) for s, _ in worlds].index(world_var.get())]
         cw, ch, chz = (int(x) for x in re.split(r"[x@]", cam_var.get()))
         result["cfg"] = {"world_name": wn, "world_path": wp,
-                         "density": density_var.get().lower(),
                          "shadows": bool(shadow_var.get()), "physics_hz": int(hz_var.get()),
                          "solver_iters": int(it_var.get()), "cam": (cw, ch, chz),
-                         "show_gui": bool(gui_var.get())}
+                         "show_gui": bool(gui_var.get()), "density": density_var.get().lower()}
         root.destroy()
 
-    bar = ttk.Frame(frm); bar.pack(fill="x", side="bottom")
-    ttk.Button(bar, text="▶  Launch", style="Launch.TButton", command=on_launch).pack(side="right")
-    ttk.Button(bar, text="Cancel", style="Ghost.TButton", command=root.destroy).pack(side="right", padx=8)
+    bar = tk.Frame(frm, bg=BG)
+    bar.pack(fill="x", side="bottom")
+
+    btn_launch = tk.Button(bar, text="▶  Launch", bg=OK, fg=BG, activebackground="#4fd061", activeforeground=BG,
+                           font=FONT_BOLD, bd=0, relief="flat", padx=16, pady=8, command=on_launch)
+    btn_launch.pack(side="right")
+
+    btn_cancel = tk.Button(bar, text="Cancel", bg=PANEL, fg=MUTED, activebackground="#30363d", activeforeground=TEXT,
+                           font=FONT, bd=0, relief="flat", padx=16, pady=8, command=root.destroy)
+    btn_cancel.pack(side="right", padx=8)
 
     root.mainloop()
     return result["cfg"]
