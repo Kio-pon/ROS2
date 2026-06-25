@@ -16,10 +16,14 @@
           </mesh>
         </geometry>
         <material>
-          <!-- Golden-green wheat color -->
-          <ambient>0.6 0.55 0.15 1</ambient>
-          <diffuse>0.75 0.65 0.2 1</diffuse>
+          <ambient>0.8 0.7 0.2 1</ambient>
+          <diffuse>0.8 0.7 0.2 1</diffuse>
           <specular>0.1 0.1 0.05 1</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://wheat_plant/materials/textures/wheat_gold.png</albedo_map>
+            </metal>
+          </pbr>
         </material>
       </visual>
     </link>
