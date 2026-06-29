@@ -48,6 +48,14 @@ pkill -9 -f gz || true
 pkill -9 -f image_bridge || true
 pkill -9 -f parameter_bridge || true
 pkill -9 -f mission_control || true
+# Wait until gz is REALLY gone. pkill -9 is async; if a stale gz server is still
+# dying when PX4 starts, px4-rc.gzsim sees its /clock and attaches the new GUI to
+# that dead instance -> drone streams (server A) but is absent from the GUI tree
+# (server B). Block here so every run is a single, clean gz instance.
+for _ in $(seq 1 12); do
+    pgrep -f "gz sim" >/dev/null 2>&1 || break
+    sleep 0.5
+done
 sleep 1
 
 # ── 2. Source launcher settings (or use defaults) ────────────────────────
