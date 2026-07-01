@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.9">
+  <world name="powerline">
+    <!-- System plugins are intentionally NOT listed here.
+         PX4's gz_env.sh sets GZ_SIM_SERVER_CONFIG_PATH to
+         Tools/simulation/gz/server.config which already loads Physics,
+         Sensors, IMU, AirPressure, Magnetometer, NavSat, UserCommands,
+         and SceneBroadcaster. Declaring them again would run each plugin
+         twice and corrupt the physics (double forces → drone spins). -->
+
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic"/>
+
+    <scene>
+      <grid>false</grid>
+      <ambient>0.6 0.6 0.6 1</ambient>
+      <background>0.53 0.81 0.98 1</background>
+      <shadows>false</shadows>
+      <sky>
+        <time>10</time>
+        <sunrise>6</sunrise>
+        <sunset>20</sunset>
+        <clouds>
+          <speed>12</speed>
+          <mean_size>0.5</mean_size>
+          <ambient>0.8 0.8 0.8 1</ambient>
+        </clouds>
+      </sky>
+    </scene>
+
+    <!-- Textured ground plane -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1 1</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction><ode/></friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.3 0.5 0.2 1</ambient>
+            <diffuse>0.3 0.5 0.2 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <pose>0 0 0 0 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx><ixy>0</ixy><ixz>0</ixz>
+            <iyy>1</iyy><iyz>0</iyz><izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      <pose>0 0 0 0 0 0</pose>
+      <self_collide>false</self_collide>
+    </model>
+
+    <!-- Sun lighting -->
+    <light name="sunUTC" type="directional">
+      <pose>0 0 500 0 0 0</pose>
+      <cast_shadows>false</cast_shadows>
+      <intensity>1</intensity>
+      <direction>-0.8 0.2 -0.5</direction>
+      <diffuse>1.0 0.95 0.8 1</diffuse>
+      <specular>0.5 0.5 0.5 1</specular>
+      <attenuation>
+        <range>2000</range>
+        <linear>0</linear>
+        <constant>1</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397971057728974</latitude_deg>
+      <longitude_deg> 8.546163739800146</longitude_deg>
+      <elevation>0</elevation>
+    </spherical_coordinates>
+
+    <!-- Transmission tower -->
+    <include>
+      <uri>model://transmission_tower</uri>
+      <name>tower_1</name>
+      <pose>20 0 0 1.5708 0 0</pose>
+      <scale>3 3 3</scale>
+    </include>
+
+  </world>
+</sdf>

@@ -19,15 +19,16 @@ ENV_FILE = os.path.join(ROOT, ".drone_launch.env")
 
 # preset -> (shadows, physics_hz, solver_iters, cam_w, cam_h, cam_hz)
 PRESETS = {
-    "Full (Potato PC)":    (False, 250, 16, 640, 480, 15),
-    "Mild":                (False, 500, 30, 960, 720, 20),
     "None (Full Quality)": (True, 1000, 50, 1280, 960, 30),
+    "Mild":                (False, 500, 30, 960, 720, 20),
+    "Full (Potato PC)":    (False, 250, 16, 640, 480, 15),
 }
 NICE = {
     "forest": "Forest",
     "farmland": "Tomato Farmland",
     "row_crops": "Mixed Vegetables",
-    "wheat_field": "Pakistani Farmland (Wheat)"
+    "wheat_field": "Pakistani Farmland (Wheat)",
+    "powerline": "Powerline Transmission"
 }
 HZ_OPTS, IT_OPTS = [250, 500, 1000], [16, 30, 50]
 CAM_OPTS = [(640, 480, 15), (960, 720, 20), (1280, 960, 30)]
@@ -81,6 +82,8 @@ def write_outputs(cfg):
         f.write(f'export DENSITY="{cfg.get("density", "medium")}"\n')
         f.write(f'export HEADLESS="{"" if cfg["show_gui"] else "1"}"\n')
         f.write(f'export LAUNCHER_WORLD_FILE="{world_out}"\n')
+        f.write(f'export PX4_SIM_MODEL="{cfg.get("sim_model", "gz_x500_mono_cam")}"\n')
+        f.write(f'export PX4_SYS_AUTOSTART="{cfg.get("autostart", "4010")}"\n')
         f.write(f'export CAM_W="{cfg["cam"][0]}"\nexport CAM_H="{cfg["cam"][1]}"\nexport CAM_HZ="{cfg["cam"][2]}"\n')
     return world_out
 
@@ -136,9 +139,20 @@ def run_terminal(worlds):
         cam = CAM_OPTS[_ask("  Camera (WxH@Hz)", [f"{w}x{h}@{r}" for w, h, r in CAM_OPTS])]
     else:
         shadows, hz, it, cw, ch, chz = PRESETS[pnames[pi]]; cam = (cw, ch, chz)
+    print("\nDrone Model:")
+    di = _ask("Select drone model", ["DJI Matrice 4E (m4e)", "Standard Camera Drone (x500)", "None (Free Roam)"])
+    if di == 0:
+        sim_model = "m4e"
+        autostart = "4900"
+    elif di == 1:
+        sim_model = "gz_x500_mono_cam"
+        autostart = "4010"
+    else:
+        sim_model = "none"
+        autostart = "none"
     show_gui = _yn("\nShow Gazebo GUI window? (off = faster)")
     return {"world_name": wn, "world_path": wp, "density": density, "shadows": shadows, "physics_hz": hz,
-            "solver_iters": it, "cam": cam, "show_gui": show_gui}
+            "solver_iters": it, "cam": cam, "show_gui": show_gui, "sim_model": sim_model, "autostart": autostart}
 
 
 # --------------------------------------------------------------------------- #
@@ -178,6 +192,16 @@ def run_gui(worlds):
     world_menu["menu"].config(bg=INPUT, fg=TEXT, activebackground=ACCENT, activeforeground=BG, font=FONT)
     world_menu.pack(fill="x", pady=(2, 12))
 
+    # DRONE MODEL
+    tk.Label(frm, text="DRONE MODEL", font=FONT_SMALL_BOLD, bg=BG, fg=ACCENT).pack(anchor="w")
+    drone_var = tk.StringVar(value="DJI Matrice 4E (m4e)")
+    drone_options = ["DJI Matrice 4E (m4e)", "Standard Camera Drone (x500)", "None (Free Roam)"]
+    drone_menu = tk.OptionMenu(frm, drone_var, *drone_options)
+    drone_menu.config(bg=INPUT, fg=TEXT, activebackground=INPUT, activeforeground=TEXT,
+                      highlightthickness=1, highlightbackground="#30363d", bd=0, font=FONT)
+    drone_menu["menu"].config(bg=INPUT, fg=TEXT, activebackground=ACCENT, activeforeground=BG, font=FONT)
+    drone_menu.pack(fill="x", pady=(2, 12))
+
     # DENSITY
     tk.Label(frm, text="DENSITY", font=FONT_SMALL_BOLD, bg=BG, fg=ACCENT).pack(anchor="w")
     density_var = tk.StringVar(value="Medium")
@@ -187,6 +211,41 @@ def run_gui(worlds):
                         highlightthickness=1, highlightbackground="#30363d", bd=0, font=FONT)
     density_menu["menu"].config(bg=INPUT, fg=TEXT, activebackground=ACCENT, activeforeground=BG, font=FONT)
     density_menu.pack(fill="x", pady=(2, 12))
+
+    def sync_world(*_):
+        try:
+            sel_nice = world_var.get()
+            sel_stem = sel_nice
+            for stem, nice_name in NICE.items():
+                if nice_name == sel_nice:
+                    sel_stem = stem
+                    break
+            gen_script = os.path.join(ROOT, f"gen_{sel_stem}.py")
+            if os.path.exists(gen_script):
+                density_menu.configure(state="normal")
+            else:
+                density_menu.configure(state="disabled")
+                density_var.set("N/A")
+        except Exception:
+            pass
+
+    world_var.trace_add("write", sync_world)
+    # Also reset density to a default when a valid world is selected
+    def reset_density(*_):
+        try:
+            sel_nice = world_var.get()
+            sel_stem = sel_nice
+            for stem, nice_name in NICE.items():
+                if nice_name == sel_nice:
+                    sel_stem = stem
+                    break
+            if os.path.exists(os.path.join(ROOT, f"gen_{sel_stem}.py")):
+                if density_var.get() == "N/A":
+                    density_var.set("Medium")
+        except Exception:
+            pass
+    world_var.trace_add("write", reset_density)
+    sync_world()
 
     # OPTIMIZATION
     tk.Label(frm, text="OPTIMIZATION", font=FONT_SMALL_BOLD, bg=BG, fg=ACCENT).pack(anchor="w")
@@ -265,10 +324,23 @@ def run_gui(worlds):
     def on_launch():
         wn, wp = worlds[[NICE.get(s, s.title()) for s, _ in worlds].index(world_var.get())]
         cw, ch, chz = (int(x) for x in re.split(r"[x@]", cam_var.get()))
+        
+        sel_drone = drone_var.get()
+        if "m4e" in sel_drone:
+            sim_model = "m4e"
+            autostart = "4900"
+        elif "x500" in sel_drone:
+            sim_model = "gz_x500_mono_cam"
+            autostart = "4010"
+        else:
+            sim_model = "none"
+            autostart = "none"
+            
         result["cfg"] = {"world_name": wn, "world_path": wp,
-                         "shadows": bool(shadow_var.get()), "physics_hz": int(hz_var.get()),
-                         "solver_iters": int(it_var.get()), "cam": (cw, ch, chz),
-                         "show_gui": bool(gui_var.get()), "density": density_var.get().lower()}
+                          "shadows": bool(shadow_var.get()), "physics_hz": int(hz_var.get()),
+                          "solver_iters": int(it_var.get()), "cam": (cw, ch, chz),
+                          "show_gui": bool(gui_var.get()), "density": density_var.get().lower(),
+                          "sim_model": sim_model, "autostart": autostart}
         root.destroy()
 
     bar = tk.Frame(frm, bg=BG)

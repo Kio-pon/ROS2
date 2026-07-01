@@ -13,7 +13,9 @@ to bilinear if models visibly step on steep gradients.
 import re, sys, os
 from PIL import Image
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PARENT_DIR = os.path.dirname(_SCRIPT_DIR)
+ROOT = _PARENT_DIR if os.path.isdir(os.path.join(_PARENT_DIR, "custom_models")) else _SCRIPT_DIR
 MODELS = os.path.join(ROOT, "custom_models")
 
 # Drone spawn clearance: body origin this far above the ground at the world

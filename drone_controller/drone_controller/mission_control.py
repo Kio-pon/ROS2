@@ -223,7 +223,7 @@ class MissionControlNode(Node):
 
         qos = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
             history=HistoryPolicy.KEEP_LAST,
             depth=1,
         )
@@ -282,13 +282,37 @@ class MissionControlNode(Node):
     def _check_camera_topic(self):
         if self.camera_sub is not None:
             return
+        # 1. Try environment variable first
+        env_topic = os.environ.get("CAM_TOPIC")
+        if env_topic:
+            self.camera_topic = env_topic
+            self._log(f"Using camera topic from env: {env_topic}")
+            self.camera_sub = self.create_subscription(
+                ROSImage, env_topic, self._on_image, qos_profile_sensor_data)
+            return
+
+        # 2. Prefer /world/ topic first to avoid matching /robot1/ etc.
+        candidates = []
         for name, types in self.get_topic_names_and_types():
             if "sensor_msgs/msg/Image" in types and "depth" not in name.lower():
-                self.camera_topic = name
-                self._log(f"Auto-detected camera topic: {name}")
-                self.camera_sub = self.create_subscription(
-                    ROSImage, name, self._on_image, qos_profile_sensor_data)
+                candidates.append(name)
+        
+        if not candidates:
+            return
+            
+        # Prioritize topics containing "world" or "x500_mono_cam"
+        match = None
+        for c in candidates:
+            if "world" in c.lower() or "x500_mono_cam" in c.lower():
+                match = c
                 break
+        if match is None:
+            match = candidates[0]
+            
+        self.camera_topic = match
+        self._log(f"Auto-detected camera topic: {match}")
+        self.camera_sub = self.create_subscription(
+            ROSImage, match, self._on_image, qos_profile_sensor_data)
 
     def _on_image(self, msg: ROSImage):
         self.latest_frame = msg
@@ -763,6 +787,7 @@ class MissionControlApp:
         self.keyboard_active = False
         self._keys_down: set[str] = set()
         self._pending_release: dict[str, str] = {}  # key -> after() id
+        self.camera_follow_active = True
 
         self._build_styles()
         self._build_layout()
@@ -867,6 +892,45 @@ class MissionControlApp:
             b.grid(row=i // 2, column=i % 2, sticky="ew", padx=2, pady=2)
         grid.columnconfigure(0, weight=1)
         grid.columnconfigure(1, weight=1)
+
+        # Camera tracking follow toggle (span both columns)
+        self.cam_follow_btn = tk.Button(
+            grid, text="Camera Track: ON (Follow)",
+            command=self._toggle_camera_follow,
+            bg=ACCENT, fg="white", activebackground=ACCENT,
+            font=("Helvetica", 9, "bold"), relief="flat", bd=0, padx=2, pady=4
+        )
+        self.cam_follow_btn.grid(row=3, column=0, columnspan=2, sticky="ew", padx=2, pady=(6, 2))
+
+    def _toggle_camera_follow(self):
+        self.camera_follow_active = not self.camera_follow_active
+        model_name = os.environ.get("PX4_SIM_MODEL", "gz_x500_mono_cam")
+        if model_name.startswith("gz_"):
+            model_instance = model_name[3:] + "_0"
+        else:
+            model_instance = model_name + "_0"
+            
+        if self.camera_follow_active:
+            cmd = [
+                "gz", "topic", "-t", "/gui/track",
+                "-m", "gz.msgs.CameraTrack",
+                "-p", f"track_mode: FOLLOW, follow_target: {{name: '{model_instance}'}}, follow_offset: {{x: -2.0, y: -2.0, z: 2.0}}, follow_pgain: 1.0, track_pgain: 1.0"
+            ]
+            self.cam_follow_btn.config(text="Camera Track: ON (Follow)", bg=ACCENT, activebackground=ACCENT)
+            self.log(f"Enabling Gazebo camera follow for {model_instance}...")
+        else:
+            cmd = [
+                "gz", "topic", "-t", "/gui/track",
+                "-m", "gz.msgs.CameraTrack",
+                "-p", "track_mode: NONE"
+            ]
+            self.cam_follow_btn.config(text="Camera Track: OFF (Free Movement)", bg="#45475a", activebackground="#45475a")
+            self.log("Disabling Gazebo camera follow (free movement active)...")
+            
+        try:
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception as exc:
+            self.log(f"Failed to set camera tracking: {exc}")
 
     def _build_keyboard(self, parent):
         sec = self._section(parent, "Live keyboard flight")

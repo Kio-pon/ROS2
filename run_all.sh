@@ -41,18 +41,14 @@ fi
 
 # ── 1. Cleanup old processes ─────────────────────────────────────────────
 echo "Cleaning up any old simulator / ROS 2 / bridge processes..."
-pkill -9 -f px4 || true
-pkill -9 -f MicroXRCEAgent || true
-pkill -9 -f ruby || true
-pkill -9 -f gz || true
-pkill -9 -f image_bridge || true
-pkill -9 -f parameter_bridge || true
-pkill -9 -f mission_control || true
-# Wait until gz is REALLY gone. pkill -9 is async; if a stale gz server is still
-# dying when PX4 starts, px4-rc.gzsim sees its /clock and attaches the new GUI to
-# that dead instance -> drone streams (server A) but is absent from the GUI tree
-# (server B). Block here so every run is a single, clean gz instance.
-for _ in $(seq 1 12); do
+# Kill everything — use SIGKILL directly to bypass permission issues
+for name in px4 MicroXRCEAgent gz image_bridge parameter_bridge mission_control; do
+    pgrep -f "$name" | while read pid; do
+        kill -9 "$pid" 2>/dev/null || true
+    done
+done
+# Wait until gz is REALLY gone so PX4 starts on a clean Gazebo instance
+for _ in $(seq 1 20); do
     pgrep -f "gz sim" >/dev/null 2>&1 || break
     sleep 0.5
 done
@@ -77,14 +73,79 @@ if [ -f "$ENV_FILE" ]; then
     echo "Translated world path: $LAUNCHER_WORLD_FILE"
 fi
 
-# DDS agent
-echo "Starting DDS Agent..."
-MicroXRCEAgent udp4 -p 8888 > ~/dds_agent.log 2>&1 &
-
 # Aircraft / world — honour launcher settings, then env overrides, then defaults
 export PX4_SYS_AUTOSTART="${PX4_SYS_AUTOSTART:-4010}"
 export PX4_SIM_MODEL="${PX4_SIM_MODEL:-gz_x500_mono_cam}"
 export PX4_GZ_WORLD="${PX4_GZ_WORLD:-forest}"
+
+# ── 3. Handle Free Roam (No Drone) Mode ──────────────────────────────────
+if [ "$PX4_SIM_MODEL" = "none" ]; then
+    echo "================================================="
+    echo "  Free Roam Mode (No Drone) — Starting Gazebo..."
+    echo "================================================="
+    
+    # Generate textures/world scenery if needed
+    for base in "$SELF_DIR" "$HOME"; do
+        GEN="$base/tools/gen_grass_texture.py"
+        GRASS="$base/custom_models/farmland_terrain/grass_diffuse.png"
+        if [ -f "$GEN" ] && [ ! -f "$GRASS" ]; then
+            echo "Generating farmland grass texture..."
+            python3 "$GEN" >/dev/null 2>&1
+        fi
+    done
+    
+    for d in "$HOME/custom_models" "$SELF_DIR/custom_models"; do
+        [ -d "$d" ] && export GZ_SIM_RESOURCE_PATH="$d:${GZ_SIM_RESOURCE_PATH:-}"
+    done
+    
+    GEN_SCRIPT="$SELF_DIR/gen_$PX4_GZ_WORLD.py"
+    if [ -f "$GEN_SCRIPT" ]; then
+        echo "Regenerating $PX4_GZ_WORLD with density=${DENSITY:-medium}..."
+        python3 "$GEN_SCRIPT" --density "${DENSITY:-medium}"
+    fi
+    
+    # We launch Gazebo with the patched world file
+    WORLD_FILE="$LAUNCHER_WORLD_FILE"
+    if [ -z "$WORLD_FILE" ] || [ ! -f "$WORLD_FILE" ]; then
+        WORLD_FILE="$HOME/custom_worlds/$PX4_GZ_WORLD.sdf"
+        [ ! -f "$WORLD_FILE" ] && WORLD_FILE="$SELF_DIR/custom_worlds/$PX4_GZ_WORLD.sdf"
+    fi
+    
+    echo "Launching Gazebo with world: $WORLD_FILE..."
+    if [ -n "$HEADLESS" ]; then
+        gz sim -s -r "$WORLD_FILE"
+    else
+        gz sim -r "$WORLD_FILE"
+    fi
+    
+    echo "Gazebo closed. Exiting."
+    exit 0
+fi
+
+# DDS agent (only started for active drones)
+echo "Starting DDS Agent..."
+MicroXRCEAgent udp4 -p 8888 > ~/dds_agent.log 2>&1 &
+
+# Auto-heal/setup custom PX4 airframe and symlinks if they are missing inside the container
+if [ "$PX4_SIM_MODEL" = "m4e" ]; then
+    if [ ! -f /home/student/PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/airframes/4900_gz_m4e ] || [ ! -f /home/student/PX4-Autopilot/build/px4_sitl_default/rootfs/etc/init.d-posix/airframes/4900_gz_m4e ]; then
+        echo "Registering custom DJI Matrice 4E airframe inside PX4..."
+        mkdir -p /home/student/PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/airframes
+        cp /home/student/custom_airframes/4900_gz_m4e /home/student/PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/airframes/4900_gz_m4e
+        
+        mkdir -p /home/student/PX4-Autopilot/build/px4_sitl_default/rootfs/etc/init.d-posix/airframes
+        cp /home/student/custom_airframes/4900_gz_m4e /home/student/PX4-Autopilot/build/px4_sitl_default/rootfs/etc/init.d-posix/airframes/4900_gz_m4e
+        
+        echo "Compiling PX4 SITL target..."
+        (cd /home/student/PX4-Autopilot && make px4_sitl_default)
+    fi
+
+    if [ ! -d /home/student/PX4-Autopilot/Tools/simulation/gz/models/m4e ]; then
+        echo "Creating DJI model symlink inside PX4..."
+        mkdir -p /home/student/PX4-Autopilot/Tools/simulation/gz/models
+        ln -sf /home/student/custom_models/m4e /home/student/PX4-Autopilot/Tools/simulation/gz/models/m4e
+    fi
+fi
 
 # Spawn pose: drop the drone right ONTO the ground (a few cm up), not 5 m above
 # it. The ground height at the origin depends on the world's heightmap terrain
@@ -104,7 +165,17 @@ if [ -z "$PX4_GZ_MODEL_POSE" ]; then
     if [ -n "$SPAWN_WORLD_SDF" ] && [ -f "$SELF_DIR/place_on_terrain.py" ]; then
         SPAWN_Z=$(python3 "$SELF_DIR/place_on_terrain.py" --spawn-z "$SPAWN_WORLD_SDF" 2>/dev/null)
     fi
-    [ -z "$SPAWN_Z" ] && SPAWN_Z=5.8   # safe fallback (forest)
+    if [ -z "$SPAWN_Z" ]; then
+        # Per-world safe fallback spawn heights (used when place_on_terrain.py fails)
+        case "$PX4_GZ_WORLD" in
+            forest)      SPAWN_Z=5.8  ;;   # forest heightmap peak at origin
+            farmland)    SPAWN_Z=1.2  ;;   # farmland_terrain is mostly flat
+            row_crops)   SPAWN_Z=1.0  ;;   # soil_terrain is flat
+            wheat_field) SPAWN_Z=1.0  ;;   # wheat_terrain is flat
+            powerline)   SPAWN_Z=1.0  ;;   # flat ground plane
+            *)           SPAWN_Z=1.5  ;;   # generic safe default
+        esac
+    fi
     export PX4_GZ_MODEL_POSE="0,0,$SPAWN_Z"
     echo "Spawn pose: 0,0,$SPAWN_Z  (ground-level for world '$PX4_GZ_WORLD')"
 fi
@@ -182,11 +253,26 @@ $P set COM_ARM_WO_GPS 1 > /dev/null 2>&1 # arm without GPS lock
 # the field-strength gate so a yaw reference is available -> arming works.
 $P set EKF2_MAG_CHECK 0 > /dev/null 2>&1  # don't reject mag on field-strength mismatch
 $P set EKF2_MAG_TYPE  1 > /dev/null 2>&1  # use magnetometer for heading
+$P set CBRK_SUPPLY_CHK 894281 > /dev/null 2>&1 # bypass power/battery check
 
-# 5. Wait for the simulator + sensors to come up
-echo "Waiting 30 seconds for the simulator and camera sensor to start..."
-for i in {30..1}; do echo -n "$i... "; sleep 1; done
-echo -e "\nInitialization complete!"
+# 5. Wait for the simulator + sensors to come up (wait for the drone model to spawn in Gazebo)
+echo "Waiting for the drone simulator to start and model to spawn..."
+SPAWNED=0
+for i in {1..60}; do
+    if gz topic -l 2>/dev/null | grep -qE "x500|m4e"; then
+        SPAWNED=1
+        break
+    fi
+    echo -n "."
+    sleep 1
+done
+echo ""
+if [ "$SPAWNED" -eq 1 ]; then
+    echo "Drone model detected! Simulator initialized."
+    sleep 2
+else
+    echo "WARN: Simulator initialization timed out after 60s (continuing anyway...)"
+fi
 
 # 6. Sourcing workspace
 echo "Sourcing workspace..."
@@ -211,6 +297,7 @@ if [ -z "$CAM_TOPIC" ]; then
     gz topic -l 2>/dev/null | grep -iE 'image|camera' || echo "   (none - is the camera model spawned?)"
     exit 1
 fi
+export CAM_TOPIC
 echo "Camera topic: $CAM_TOPIC"
 
 # 8. Bridge the Gazebo camera into ROS 2
@@ -219,8 +306,25 @@ if ! ros2 pkg prefix ros_gz_image >/dev/null 2>&1; then
     echo "       Install it:  sudo apt install ros-jazzy-ros-gz-image"
     echo "       (In the Docker image this is preinstalled, so this should not happen there.)"
 fi
-echo "Starting ros_gz image bridge on $CAM_TOPIC ..."
-ros2 run ros_gz_image image_bridge "$CAM_TOPIC" > ~/image_bridge.log 2>&1 &
+if [ "$PX4_SIM_MODEL" = "m4e" ]; then
+    echo "Starting ros_gz_bridge parameter bridge using launchers/bridge.yaml (with auto-restart)..."
+    (
+      while true; do
+        ros2 run ros_gz_bridge parameter_bridge --ros-args -p config_file:=/home/student/launchers/bridge.yaml >> ~/image_bridge.log 2>&1
+        echo "[parameter_bridge] exited with $? — restarting in 2s..." >> ~/image_bridge.log
+        sleep 2
+      done
+    ) &
+else
+    echo "Starting ros_gz image bridge on $CAM_TOPIC (with auto-restart)..."
+    (
+      while true; do
+        ros2 run ros_gz_image image_bridge "$CAM_TOPIC" >> ~/image_bridge.log 2>&1
+        echo "[image_bridge] exited with $? — restarting in 2s..." >> ~/image_bridge.log
+        sleep 2
+      done
+    ) &
+fi
 sleep 3
 # Confirm the camera actually reached ROS 2 (catches the cross-machine blank-feed issue)
 if ros2 topic list 2>/dev/null | grep -qF "$CAM_TOPIC"; then

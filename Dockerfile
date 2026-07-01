@@ -25,7 +25,7 @@ FROM ubuntu:24.04 AS base
 # ── Build arguments ──────────────────────────────────────────────────────
 ARG PX4_REF=183b3e38d5
 ARG PX4MSGS_REF=64775a2
-ARG JOBS=4
+ARG JOBS=6
 ARG USERNAME=student
 ARG USER_UID=1000
 ARG USER_GID=1000
@@ -105,22 +105,41 @@ RUN rosdep update
 # =============================================================================
 # LAYER 4 — PX4-Autopilot SITL (pinned commit -> matches host topic versions)
 # =============================================================================
-RUN git clone --recursive https://github.com/PX4/PX4-Autopilot.git && \
+RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
+    git clone --filter=blob:none --no-checkout \
+        https://github.com/PX4/PX4-Autopilot.git && \
     cd PX4-Autopilot && \
     git checkout ${PX4_REF} && \
-    git submodule update --init --recursive && \
+    # Only init the submodules needed for Gazebo SITL — skips NuttX RTOS,
+    # FlightGear bridge, JSBSim, and Voxl2 BSP (saves 8-12 min of downloads).
+    git submodule update --init --depth 1 --recursive \
+        src/lib \
+        src/modules \
+        src/drivers \
+        src/systemcmds \
+        Tools/simulation/gz \
+        platforms/posix \
+        msg \
+        ROMFS && \
     sudo -E bash Tools/setup/ubuntu.sh --no-nuttx && \
     DONT_RUN=1 make -j${JOBS} px4_sitl && \
-    rm -rf build/px4_sitl_default/tmp
+    # Aggressively strip build artifacts — keeps the binary, removes ~500 MB of
+    # intermediate .o files, CMake cache, and fetched dependencies.
+    find build/px4_sitl_default -name '*.o' -delete && \
+    rm -rf build/px4_sitl_default/tmp \
+           build/px4_sitl_default/src \
+           build/px4_sitl_default/CMakeFiles \
+           build/px4_sitl_default/_deps
 
 # =============================================================================
 # LAYER 5 — Micro-XRCE-DDS Agent (PX4 <-> ROS 2 transport)
 # =============================================================================
 RUN git clone --depth 1 https://github.com/eProsima/Micro-XRCE-DDS-Agent.git && \
     cd Micro-XRCE-DDS-Agent && mkdir build && cd build && \
-    cmake .. && make -j${JOBS} && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && make -j${JOBS} && \
     sudo make install && sudo ldconfig /usr/local/lib/ && \
-    cd ${HOME} && rm -rf Micro-XRCE-DDS-Agent/build
+    # Remove the full source tree — the installed binary is in /usr/local/bin.
+    cd ${HOME} && rm -rf Micro-XRCE-DDS-Agent
 
 # =============================================================================
 # LAYER 6 — ROS 2 workspace with px4_msgs (pinned commit)
@@ -130,7 +149,10 @@ RUN mkdir -p ${HOME}/px4_ros2_ws/src && \
     git clone https://github.com/PX4/px4_msgs.git && \
     cd px4_msgs && git checkout ${PX4MSGS_REF} && \
     cd ${HOME}/px4_ros2_ws && \
-    bash -c "source /opt/ros/jazzy/setup.bash && colcon build --symlink-install"
+    bash -c "source /opt/ros/jazzy/setup.bash && \
+             colcon build --symlink-install \
+               --parallel-workers ${JOBS} \
+               --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # =============================================================================
 # Extensibility mount points — drop in custom models / worlds / airframes /
@@ -164,7 +186,10 @@ COPY --chown=${USER_UID}:${USER_GID} custom_worlds/*.sdf ${HOME}/PX4-Autopilot/T
 
 RUN cd ${HOME}/px4_ros2_ws && \
     bash -c "source /opt/ros/jazzy/setup.bash && source install/setup.bash && \
-             colcon build --symlink-install --packages-select drone_controller first"
+             colcon build --symlink-install \
+               --packages-select drone_controller first \
+               --parallel-workers ${JOBS} \
+               --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Launcher scripts + GUI + entrypoint (strip any CRLF from Windows-edited files)
 COPY --chown=${USER_UID}:${USER_GID} run_*.sh         ${HOME}/launchers/

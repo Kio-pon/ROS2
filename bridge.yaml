@@ -1,0 +1,54 @@
+# Simulation clock
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: GZ_TO_ROS
+
+# Cameras: lazy=true — Gazebo renders only while a ROS2 subscriber exists.
+- ros_topic_name: "/drone/camera/wide/image_raw"
+  gz_topic_name: "/drone/camera/wide/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+  lazy: true
+
+- ros_topic_name: "/drone/camera/medium_tele/image_raw"
+  gz_topic_name: "/drone/camera/medium_tele/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+  lazy: true
+
+- ros_topic_name: "/drone/camera/tele/image_raw"
+  gz_topic_name: "/drone/camera/tele/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+  lazy: true
+
+# Gimbal joint commands: ROS → Gz (Float64 rad → Double)
+- ros_topic_name: "/drone/gimbal/cmd/pan"
+  gz_topic_name: "/drone/gimbal/cmd/pan"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/drone/gimbal/cmd/roll"
+  gz_topic_name: "/drone/gimbal/cmd/roll"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/drone/gimbal/cmd/tilt"
+  gz_topic_name: "/drone/gimbal/cmd/tilt"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+# LRF: range via gz-transport
+- ros_topic_name: "/drone/lrf/range"
+  gz_topic_name: "/drone/lrf/range"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS

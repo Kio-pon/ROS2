@@ -9,7 +9,12 @@ import os, sys, argparse, random
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import place_on_terrain as pot
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+# Resolve the output directory: works whether the script lives in the repo root
+# (native) or in ~/launchers/ (Docker) — custom_worlds is always one level up
+# from launchers/ or alongside the script in the repo root.
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PARENT_DIR = os.path.dirname(_SCRIPT_DIR)
+ROOT = _PARENT_DIR if os.path.isdir(os.path.join(_PARENT_DIR, "custom_worlds")) else _SCRIPT_DIR
 OUT = os.path.join(ROOT, "custom_worlds", "forest.sdf")
 
 # Grid dimensions for tree placement: (cells_x, cells_y)

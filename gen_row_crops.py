@@ -10,7 +10,9 @@ import os, sys, argparse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import place_on_terrain as pot
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PARENT_DIR = os.path.dirname(_SCRIPT_DIR)
+ROOT = _PARENT_DIR if os.path.isdir(os.path.join(_PARENT_DIR, "custom_worlds")) else _SCRIPT_DIR
 OUT = os.path.join(ROOT, "custom_worlds", "row_crops.sdf")
 Y0, Y1 = -6.0, 6.0
 BALES = [(-11, 7, 0.5), (11, -7, 1.2)]

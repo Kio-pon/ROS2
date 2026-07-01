@@ -28,6 +28,8 @@ setup(
             'drone_keyboard_teleop = drone_controller.drone_keyboard_teleop:main',
             'mission_control = drone_controller.mission_control:main',
             'camera_proof = drone_controller.camera_proof:main',
+            'm4e_controller = drone_controller.m4e_controller:main',
+            'camera_switcher = drone_controller.camera_switcher:main',
         ],
     },
 )

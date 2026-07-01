@@ -27,16 +27,31 @@ services:
       args:
         PX4_REF: ${PX4_REF:-183b3e38d5}
         PX4MSGS_REF: ${PX4MSGS_REF:-64775a2}
-        JOBS: ${BUILD_JOBS:-4}
+        JOBS: ${BUILD_JOBS:-6}
         USER_UID: ${UID:-1000}
         USER_GID: ${GID:-1000}
     image: px4-drone-sim:latest
     container_name: px4-drone-sim
 
+    # ── Resource allocation — give the container the full machine ──────────
+    cpus: "8"               # allow all 8 host cores
+    cpuset: "0-7"           # pin to all cores (prevents scheduler bouncing)
+    mem_limit: 14g          # cap at 14 GB — leaves ~2 GB for host OS
+    memswap_limit: 18g      # allows 4 GB swap headroom if RAM spikes
+    shm_size: "2g"          # shared-memory for Gazebo/DDS (default 64 MB is too small)
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536         # raise open-file limit for Gazebo + DDS topics
+      stack:
+        soft: -1
+        hard: -1            # unlimited stack — needed by PX4 posix platform
+
     # Host networking = zero-config ROS 2 DDS discovery, Gazebo transport,
     # and the XRCE-DDS UDP link. IPC host = fast shared-memory for DDS.
     network_mode: host
     ipc: host
+    pid: host               # share host PID namespace — lets nice/renice work from host
     init: true            # reap the many child processes PX4/Gazebo spawn
 
     environment:
@@ -63,11 +78,23 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       # Live-edit your code on the host; rebuild with colcon inside the container.
       - ./drone_controller:/home/student/px4_ros2_ws/src/drone_controller
+      - /home/administrator/Downloads:/home/student/Downloads
       # --- Extensibility: drop assets here, no rebuild needed ---------------
       - ./custom_models:/home/student/custom_models       # custom Gazebo SDF models
       - ./custom_worlds:/home/student/custom_worlds       # custom .sdf worlds
       - ./custom_airframes:/home/student/custom_airframes  # custom PX4 airframe configs
       - ./missions:/home/student/missions                  # saved Mission Control plans (JSON)
+      # Launcher scripts — bind-mounted so host edits reflect in the container instantly
+      - ./gen_forest.py:/home/student/launchers/gen_forest.py
+      - ./gen_farmland.py:/home/student/launchers/gen_farmland.py
+      - ./gen_row_crops.py:/home/student/launchers/gen_row_crops.py
+      - ./gen_wheat_field.py:/home/student/launchers/gen_wheat_field.py
+      - ./launcher_gui.py:/home/student/launchers/launcher_gui.py
+      - ./place_on_terrain.py:/home/student/launchers/place_on_terrain.py
+      - ./run_all.sh:/home/student/launchers/run_all.sh
+      - ./custom_models:/home/student/custom_models
+      - ./custom_worlds:/home/student/custom_worlds
+      - ./bridge.yaml:/home/student/launchers/bridge.yaml
 
     # Intel/AMD GPU + software rendering go through /dev/dri.
     # (NVIDIA uses the toolkit instead — see docker-compose.nvidia.yml.)
@@ -76,6 +103,7 @@ services:
     group_add:
       - video
       - render
+      - "992"
 
     stdin_open: true
     tty: true
