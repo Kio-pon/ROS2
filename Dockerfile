@@ -156,7 +156,7 @@ RUN mkdir -p ${HOME}/px4_ros2_ws/src && \
 
 # =============================================================================
 # Extensibility mount points — drop in custom models / worlds / airframes /
-# missions at runtime (see docker-compose.yml volumes + README_DOCKER.md).
+# missions at runtime (see docker-compose.yml volumes + docs/README_DOCKER.md).
 # =============================================================================
 RUN mkdir -p ${HOME}/custom_models ${HOME}/custom_worlds \
              ${HOME}/custom_airframes ${HOME}/missions ${HOME}/launchers
@@ -177,7 +177,6 @@ RUN { \
 #   for live editing, so a host edit + `colcon build` is enough day to day.
 # =============================================================================
 COPY --chown=${USER_UID}:${USER_GID} drone_controller/ ${HOME}/px4_ros2_ws/src/drone_controller/
-COPY --chown=${USER_UID}:${USER_GID} first/            ${HOME}/px4_ros2_ws/src/first/
 COPY --chown=${USER_UID}:${USER_GID} custom_models/    ${HOME}/custom_models/
 COPY --chown=${USER_UID}:${USER_GID} custom_worlds/    ${HOME}/custom_worlds/
 COPY --chown=${USER_UID}:${USER_GID} custom_airframes/ ${HOME}/custom_airframes/
@@ -187,17 +186,14 @@ COPY --chown=${USER_UID}:${USER_GID} custom_worlds/*.sdf ${HOME}/PX4-Autopilot/T
 RUN cd ${HOME}/px4_ros2_ws && \
     bash -c "source /opt/ros/jazzy/setup.bash && source install/setup.bash && \
              colcon build --symlink-install \
-               --packages-select drone_controller first \
+               --packages-select drone_controller \
                --parallel-workers ${JOBS} \
                --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Launcher scripts + GUI + entrypoint (strip any CRLF from Windows-edited files)
-COPY --chown=${USER_UID}:${USER_GID} run_*.sh         ${HOME}/launchers/
-COPY --chown=${USER_UID}:${USER_GID} launcher_gui.py  ${HOME}/launchers/launcher_gui.py
-COPY --chown=${USER_UID}:${USER_GID} gen_*.py         ${HOME}/launchers/
-COPY --chown=${USER_UID}:${USER_GID} place_on_terrain.py ${HOME}/launchers/
-COPY --chown=${USER_UID}:${USER_GID} tools/            ${HOME}/tools/
-COPY --chown=${USER_UID}:${USER_GID} entrypoint.sh    ${HOME}/entrypoint.sh
+COPY --chown=${USER_UID}:${USER_GID} launchers/       ${HOME}/launchers/
+COPY --chown=${USER_UID}:${USER_GID} tools/           ${HOME}/tools/
+COPY --chown=${USER_UID}:${USER_GID} tools/entrypoint.sh    ${HOME}/entrypoint.sh
 RUN sed -i 's/\r$//' ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh ${HOME}/launchers/*.py ${HOME}/tools/*.py && \
     chmod +x         ${HOME}/entrypoint.sh ${HOME}/launchers/*.sh ${HOME}/launchers/*.py ${HOME}/tools/*.py
 

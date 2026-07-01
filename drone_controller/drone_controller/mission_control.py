@@ -62,7 +62,8 @@ try:
         VehicleLocalPosition,
         VehicleStatus,
     )
-    from sensor_msgs.msg import Image as ROSImage
+    from sensor_msgs.msg import Image as ROSImage, CompressedImage
+    from std_msgs.msg import Float64, String
 except ImportError as exc:  # pragma: no cover - only triggers outside a sourced ROS env
     import sys
 
@@ -149,6 +150,31 @@ DANGER = "#f85149"
 TEXT = "#e6edf3"
 MUTED = "#8b949e"
 
+# DJI M4E Specific constants & helpers
+LENSES = {
+    "wide":        "Wide  84°",
+    "medium_tele": "Med   35°",
+    "tele":        "Tele  15°",
+}
+
+JOINTS = {
+    "pan":  {"lo": -1.047198, "hi":  1.047198, "topic": "/drone/gimbal/cmd/pan"},
+    "roll": {"lo": -0.820305, "hi":  0.820305, "topic": "/drone/gimbal/cmd/roll"},
+    "tilt": {"lo": -1.570796, "hi":  0.610865, "topic": "/drone/gimbal/cmd/tilt"},
+}
+
+_LOG_ZOOM_MAX  = math.log(168.0)
+_ZOOM_BREAKS   = [(3.0, "wide"), (7.0, "medium_tele"), (float("inf"), "tele")]
+
+def _slider_to_zoom(s: float) -> float:
+    return math.exp(float(s) * _LOG_ZOOM_MAX)
+
+def _zoom_to_lens(z: float) -> str:
+    for threshold, name in _ZOOM_BREAKS:
+        if z < threshold:
+            return name
+    return "tele"
+
 
 def wrap_pi(angle: float) -> float:
     """Wrap an angle to [-pi, pi]."""
@@ -233,13 +259,35 @@ class MissionControlNode(Node):
         self._pub_traj = self.create_publisher(TrajectorySetpoint, TOPIC_TRAJECTORY, qos)
         self._pub_cmd = self.create_publisher(VehicleCommand, TOPIC_VEHICLE_CMD, qos)
 
+        self._gimbal_pubs = {
+            name: self.create_publisher(Float64, cfg["topic"], 1)
+            for name, cfg in JOINTS.items()
+        }
+        self._cam_select_pub = self.create_publisher(String,  "/drone/camera/select", 1)
+        self._zoom_pub       = self.create_publisher(Float64, "/drone/camera/zoom",   1)
+
         # Subscribers
         self.create_subscription(VehicleLocalPosition, TOPIC_LOCAL_POS, self._on_local_pos, qos)
         self.create_subscription(VehicleStatus, TOPIC_STATUS, self._on_status, qos)
 
+        # DJI Active Lens Compressed subscriber
+        img_qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            durability=DurabilityPolicy.VOLATILE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=1,
+        )
+        self.create_subscription(
+            CompressedImage,
+            "/drone/camera/active/image_raw/compressed",
+            self._on_compressed_image,
+            img_qos,
+        )
+
         # --- Camera ---
         self.camera_sub = None
         self.latest_frame = None
+        self.latest_frame_decoded = None
         self.camera_topic = None
         self.create_timer(2.0, self._check_camera_topic)
 
@@ -317,7 +365,19 @@ class MissionControlNode(Node):
     def _on_image(self, msg: ROSImage):
         self.latest_frame = msg
 
+    def _on_compressed_image(self, msg: CompressedImage):
+        try:
+            import io
+            from PIL import Image as PILImage
+            pil = PILImage.open(io.BytesIO(bytes(msg.data))).convert("RGB")
+            self.latest_frame_decoded = (pil.width, pil.height, pil.tobytes())
+            self.latest_frame = msg
+        except Exception as e:
+            self.get_logger().warn(f"compressed image decode error: {e}")
+
     def get_latest_frame_rgb(self):
+        if self.latest_frame_decoded is not None:
+            return self.latest_frame_decoded
         msg = self.latest_frame
         if not msg:
             return None
@@ -389,6 +449,27 @@ class MissionControlNode(Node):
     def disarm(self):
         self._log("Disarming motors...")
         self._publish_cmd(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 0.0)
+
+    def kill(self):
+        self._log("⛔ KILL: Terminating flight (cutting motors)...")
+        self._publish_cmd(VehicleCommand.VEHICLE_CMD_DO_FLIGHTTERMINATION, 1.0)
+
+    # ---- DJI gimbal & zoom commands ------------------------------------------
+    def cmd_gimbal(self, joint: str, radians: float):
+        msg = Float64()
+        msg.data = float(radians)
+        self._gimbal_pubs[joint].publish(msg)
+
+    def cmd_zoom(self, zoom: float, lens: str) -> None:
+        zm = Float64(); zm.data = float(zoom)
+        self._zoom_pub.publish(zm)
+        sl = String(); sl.data = lens
+        self._cam_select_pub.publish(sl)
+
+    def start_stream(self, lens_name: str) -> None:
+        msg = String()
+        msg.data = lens_name
+        self._cam_select_pub.publish(msg)
 
     def engage_offboard(self):
         self._log("Engaging OFFBOARD mode...")
@@ -775,13 +856,19 @@ class MissionControlApp:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("PX4 Drone Mission Control")
-        self.root.geometry("950x660")
+        
+        # Larger window to accommodate the inspection gimbal/zoom panel comfortably
+        self.root.geometry("1000x800")
         self.root.configure(bg=BG)
 
         self.log_queue: "queue.Queue[str]" = queue.Queue()
         self.steps: list[MissionStep] = []
         self.executor: Optional[MissionExecutor] = None
         self.qgc_proc: Optional[subprocess.Popen] = None
+        
+        # DJI specific variables
+        self.active_lens = None
+        self.switcher_proc = None
 
         # Live-keyboard state
         self.keyboard_active = False
@@ -797,6 +884,10 @@ class MissionControlApp:
         self._ros_stop = threading.Event()
         self._ros_thread = threading.Thread(target=self._ros_spin, daemon=True)
         self._ros_thread.start()
+
+        # Start camera switcher node in the background if m4e model is active
+        if os.environ.get("PX4_SIM_MODEL") == "m4e":
+            self._start_camera_switcher()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         self._poll_log()
@@ -902,6 +993,21 @@ class MissionControlApp:
         )
         self.cam_follow_btn.grid(row=3, column=0, columnspan=2, sticky="ew", padx=2, pady=(6, 2))
 
+        # DJI specific emergency motor kill (span both columns)
+        if os.environ.get("PX4_SIM_MODEL") == "m4e":
+            self.kill_btn = tk.Button(
+                grid, text="⛔ EMERGENCY MOTOR KILL",
+                command=self._cmd_kill,
+                bg=DANGER, fg="white", activebackground=DANGER,
+                font=("Helvetica", 9, "bold"), relief="flat", bd=0, padx=2, pady=4
+            )
+            self.kill_btn.grid(row=4, column=0, columnspan=2, sticky="ew", padx=2, pady=(2, 2))
+
+    def _cmd_kill(self):
+        if messagebox.askyesno("Confirm KILL", "Cut motors immediately? The drone will fall.", parent=self.root):
+            if self.node:
+                self.node.kill()
+
     def _toggle_camera_follow(self):
         self.camera_follow_active = not self.camera_follow_active
         model_name = os.environ.get("PX4_SIM_MODEL", "gz_x500_mono_cam")
@@ -963,6 +1069,110 @@ class MissionControlApp:
         self.cam_canvas = tk.Canvas(sec, bg="#000000", height=0, highlightthickness=0)
         self.camera_active = False
         self._photo_image = None
+
+        # --- DJI M4E Gimbal & Camera controls ---
+        if os.environ.get("PX4_SIM_MODEL") == "m4e":
+            # Add Lens selectors
+            lens_frame = tk.Frame(sec, bg=PANEL)
+            lens_frame.pack(fill="x", padx=4, pady=4)
+            tk.Label(lens_frame, text="Lens:", bg=PANEL, fg=TEXT, font=("Helvetica", 9, "bold")).pack(side="left", padx=(0, 4))
+            
+            self.lens_buttons = {}
+            for lens, label in LENSES.items():
+                b = tk.Button(lens_frame, text=label.split()[0], command=lambda l=lens: self._select_lens(l),
+                              bg="#21262d", fg=TEXT, font=("Helvetica", 8, "bold"), relief="flat", bd=0, padx=4, pady=2)
+                b.pack(side="left", padx=2, expand=True, fill="x")
+                self.lens_buttons[lens] = b
+            
+            # Gimbal sliders
+            gim_sec = tk.Frame(sec, bg=PANEL)
+            gim_sec.pack(fill="x", padx=4, pady=4)
+            
+            self._joint_vars = {}
+            self._joint_labels = {}
+            for name, cfg in JOINTS.items():
+                lo_deg, hi_deg = math.degrees(cfg["lo"]), math.degrees(cfg["hi"])
+                row_g = tk.Frame(gim_sec, bg=PANEL)
+                row_g.pack(fill="x", pady=2)
+                
+                tk.Label(row_g, text=name.upper()[:4], bg=PANEL, fg=TEXT, font=("Helvetica", 8, "bold"), width=5, anchor="w").pack(side="left")
+                val_lbl = tk.Label(row_g, text=" +0.0°", bg=PANEL, fg=ACCENT, font=("Consolas", 8), width=7, anchor="e")
+                val_lbl.pack(side="right")
+                self._joint_labels[name] = val_lbl
+                
+                var = tk.DoubleVar(value=0.0)
+                self._joint_vars[name] = var
+                
+                slider = ttk.Scale(row_g, from_=lo_deg, to=hi_deg, orient=tk.HORIZONTAL, variable=var, length=120)
+                slider.pack(side="left", padx=4, fill="x", expand=True)
+                
+                def _moved(val, n=name, lbl=val_lbl):
+                    deg = float(val)
+                    lbl.config(text=f"{deg:+.1f}°")
+                    if self.node:
+                        self.node.cmd_gimbal(n, math.radians(deg))
+                slider.configure(command=_moved)
+            
+            # Zoom slider
+            zoom_row = tk.Frame(gim_sec, bg=PANEL)
+            zoom_row.pack(fill="x", pady=2)
+            tk.Label(zoom_row, text="ZOOM", bg=PANEL, fg=TEXT, font=("Helvetica", 8, "bold"), width=5, anchor="w").pack(side="left")
+            self._zoom_label = tk.Label(zoom_row, text="  1.0x", bg=PANEL, fg=ACCENT, font=("Consolas", 8), width=7, anchor="e")
+            self._zoom_label.pack(side="right")
+            
+            self._zoom_var = tk.DoubleVar(value=0.0)
+            zoom_slider = ttk.Scale(zoom_row, from_=0.0, to=1.0, orient=tk.HORIZONTAL, variable=self._zoom_var, length=120)
+            zoom_slider.pack(side="left", padx=4, fill="x", expand=True)
+            
+            def _on_zoom(val):
+                z = _slider_to_zoom(val)
+                lens = _zoom_to_lens(z)
+                self._zoom_label.config(text=f"{z:5.1f}x")
+                if self.node:
+                    self.node.cmd_zoom(z, lens)
+                if lens != self.active_lens:
+                    self._update_lens_buttons_active(lens)
+            zoom_slider.configure(command=_on_zoom)
+
+            # Home gimbal button
+            btn_home = tk.Button(gim_sec, text="Home Gimbal", command=self._gimbal_home,
+                                 bg="#21262d", fg=TEXT, font=("Helvetica", 8, "bold"), relief="flat", bd=0, pady=2)
+            btn_home.pack(fill="x", pady=(4, 0))
+
+    def _select_lens(self, lens):
+        self.active_lens = lens
+        self._update_lens_buttons_active(lens)
+        self.log(f"Lens select -> {LENSES.get(lens, lens)}")
+        if self.node:
+            self.node.start_stream(lens)
+
+    def _update_lens_buttons_active(self, lens):
+        self.active_lens = lens
+        if hasattr(self, 'lens_buttons'):
+            for l, b in self.lens_buttons.items():
+                if l == lens:
+                    b.config(bg=ACCENT, fg=BG)
+                else:
+                    b.config(bg="#21262d", fg=TEXT)
+
+    def _gimbal_home(self):
+        if hasattr(self, '_joint_vars'):
+            for name, var in self._joint_vars.items():
+                var.set(0.0)
+                self._joint_labels[name].config(text=" +0.0°")
+                if self.node:
+                    self.node.cmd_gimbal(name, 0.0)
+            self.log("Gimbal homed.")
+
+    def _start_camera_switcher(self):
+        try:
+            self.switcher_proc = subprocess.Popen(
+                ["ros2", "run", "drone_controller", "camera_switcher"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            self.log("camera_switcher daemon started (relays lenses to /drone/camera/active/...)")
+        except Exception as e:
+            self.switcher_proc = None
+            self.log(f"camera_switcher failed to start: {e}")
 
     def _toggle_camera(self):
         self.camera_active = not self.camera_active
@@ -1429,6 +1639,8 @@ class MissionControlApp:
                     os.killpg(os.getpgid(self.qgc_proc.pid), signal.SIGTERM)
                 except OSError:
                     self.qgc_proc.terminate()
+            if self.switcher_proc and self.switcher_proc.poll() is None:
+                self.switcher_proc.terminate()
         finally:
             self._ros_stop.set()
             self._ros_thread.join(timeout=2.0)

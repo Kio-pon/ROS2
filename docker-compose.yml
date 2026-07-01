@@ -85,16 +85,7 @@ services:
       - ./custom_airframes:/home/student/custom_airframes  # custom PX4 airframe configs
       - ./missions:/home/student/missions                  # saved Mission Control plans (JSON)
       # Launcher scripts — bind-mounted so host edits reflect in the container instantly
-      - ./gen_forest.py:/home/student/launchers/gen_forest.py
-      - ./gen_farmland.py:/home/student/launchers/gen_farmland.py
-      - ./gen_row_crops.py:/home/student/launchers/gen_row_crops.py
-      - ./gen_wheat_field.py:/home/student/launchers/gen_wheat_field.py
-      - ./launcher_gui.py:/home/student/launchers/launcher_gui.py
-      - ./place_on_terrain.py:/home/student/launchers/place_on_terrain.py
-      - ./run_all.sh:/home/student/launchers/run_all.sh
-      - ./custom_models:/home/student/custom_models
-      - ./custom_worlds:/home/student/custom_worlds
-      - ./bridge.yaml:/home/student/launchers/bridge.yaml
+      - ./launchers:/home/student/launchers
 
     # Intel/AMD GPU + software rendering go through /dev/dri.
     # (NVIDIA uses the toolkit instead — see docker-compose.nvidia.yml.)

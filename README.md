@@ -37,9 +37,9 @@ The project connects ROS 2 Jazzy to the PX4 Autopilot SITL simulator (Gazebo Har
 Follow these steps to set up the environment on **Ubuntu 24.04**:
 
 ### 1. Install ROS 2 Jazzy Desktop
-Follow the instructions in `setup_ros2_jazzy.sh` or run:
+Follow the instructions in `setup/setup_ros2_jazzy.sh` or run:
 ```bash
-sudo ./setup_ros2_jazzy.sh
+sudo ./setup/setup_ros2_jazzy.sh
 ```
 
 ### 2. Install GUI and Image Processing Dependencies
@@ -57,14 +57,14 @@ sudo apt install -y ros-jazzy-ros-gz-image ros-jazzy-joy
 ### 4. Setup PX4 Autopilot & DDS Agent
 Run the setup script to clone PX4 Autopilot, run the PX4 setup scripts, compile the SITL target, and build the DDS Agent:
 ```bash
-./setup_px4_sitl.sh
+./setup/setup_px4_sitl.sh
 ```
 
 ---
 
 ## 🚀 How to Run the Simulation
 
-The project includes several unified launcher scripts:
+The project includes several unified launcher scripts inside the `launchers/` directory. For convenience, you can launch the complete simulation directly from the root using `./run_all.sh`.
 
 ### 1. Complete Simulation with Live Camera & Mission Control (Recommended)
 This boots the DDS Agent, launches Gazebo with a camera-equipped quadcopter, bridges the Gazebo camera into ROS 2, and starts the Ground Station GUI:
@@ -75,36 +75,34 @@ This boots the DDS Agent, launches Gazebo with a camera-equipped quadcopter, bri
 ### 2. Interactive Mission Control GUI (Standard Drone)
 Boots the simulation with a standard quadcopter and opens the Tkinter Ground Station:
 ```bash
-./run_mission_control.sh
+./launchers/run_mission_control.sh
 ```
 
 ### 3. Autonomous Flight Mission
 Runs a pre-programmed autonomous flight script (`autonomous_mission.py`):
 ```bash
-./run_flight.sh
+./launchers/run_flight.sh
 ```
 
 ### 4. Keyboard Teleoperation
 Launches keyboard-based flight controls:
 ```bash
-./run_teleop.sh
+./launchers/run_teleop.sh
 ```
 
 ### 5. Headless Mode (CLI only)
 Runs the simulation in headless mode (no Gazebo UI) to save system resources:
 ```bash
-./run_headless_drone.sh
+./launchers/run_headless_drone.sh
 ```
 
 ---
 
 ## 📁 File Structure
 
-- **`drone_controller/`**: Core ROS 2 Python package.
-  - **`drone_controller/mission_control.py`**: Tkinter Ground Station GUI with keyboard flight, waypoint mission builder, and live camera feed.
-  - **`drone_controller/autonomous_mission.py`**: Autonomous flight node.
-  - **`drone_controller/drone_keyboard_teleop.py`**: Standalone keyboard flight controller.
-  - **`drone_controller/camera_proof.py`**: Validates Gazebo camera bridge frames.
-- **`first/`**: Initial test ROS 2 package.
-- **`setup_*.sh`**: System installation and build automation scripts.
-- **`run_*.sh`**: One-click launchers for the simulation, teleop, and control scripts.
+- **`drone_controller/`**: Core ROS 2 Python package containing flight controllers, Ground Station GUI (`mission_control`), keyboard teleoperation, and camera proofing scripts.
+- **`launchers/`**: Clean folder containing simulator, headless, teleoperation, and autopilot launcher scripts.
+- **`tools/`**: Development and validation utilities (world generators, snappers, asset optimizers, and test suites).
+- **`practice/`**: Practice code (loops, tuples, dictionaries, turtlesim launchers) and ROS 2 exercises.
+- **`docs/`**: PDFs and Markdown study guides for ROS 2 and PX4 SITL.
+- **`setup_*.sh`**: System-level installation and configuration automation scripts.
