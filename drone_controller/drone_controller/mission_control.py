@@ -109,8 +109,8 @@ STEP_TIMEOUT_S = 60.0           # per-step safety timeout
 LINK_TIMEOUT_S = 5.0            # telemetry considered stale after this
 
 # Live keyboard tuning (matches drone_keyboard_teleop conventions)
-KB_SPEED = 1.5                  # m/s commanded while a translation key is held
-KB_YAW_RATE = 0.8               # rad/s commanded while a yaw key is held
+KB_SPEED = 6.0                  # m/s commanded while a translation key is held
+KB_YAW_RATE = 1.5               # rad/s commanded while a yaw key is held
 KB_AUTOREPEAT_GRACE_MS = 60     # debounce X11 key-repeat release events
 
 # Human-readable PX4 navigation states (unknown values fall back to the number)
@@ -1038,7 +1038,7 @@ class MissionControlApp:
             cmd = [
                 "gz", "topic", "-t", "/gui/track",
                 "-m", "gz.msgs.CameraTrack",
-                "-p", f"track_mode: FOLLOW, follow_target: {{name: '{model_instance}'}}, follow_offset: {{x: -2.0, y: -2.0, z: 2.0}}, follow_pgain: 1.0, track_pgain: 1.0"
+                "-p", f"track_mode: FOLLOW, follow_target: {{name: '{model_instance}'}}, follow_offset: {{x: -3.0, y: 0.0, z: 1.5}}, follow_pgain: 1.0, track_pgain: 1.0"
             ]
             self.cam_follow_btn.config(text="Camera Track: ON (Follow)", bg=ACCENT, activebackground=ACCENT)
             self.log(f"Enabling Gazebo camera follow for {model_instance}...")

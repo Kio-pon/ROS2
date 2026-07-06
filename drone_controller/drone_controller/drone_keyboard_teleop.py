@@ -77,9 +77,9 @@ class DroneKeyboardTeleop(Node):
         self.yaw_rate = 0.0
 
         # Speed limits
-        self.SPEED_STEP = 0.2     # m/s step per key press
+        self.SPEED_STEP = 1.0     # m/s step per key press
         self.YAW_STEP = 0.3       # rad/s step per key press
-        self.MAX_SPEED = 2.0      # m/s
+        self.MAX_SPEED = 8.0      # m/s
         self.MAX_YAW_RATE = 1.5   # rad/s
 
         # Terminal settings backup

@@ -130,9 +130,27 @@ fi
 echo "Starting DDS Agent..."
 MicroXRCEAgent udp4 -p 8888 > ~/dds_agent.log 2>&1 &
 
+# Ensure rootfs/etc is a symlink to build/px4_sitl_default/etc and not a real directory
+# that breaks PX4 startup.
+PX4_PATH="$HOME/PX4-Autopilot"
+ROOTFS_ETC="$PX4_PATH/build/px4_sitl_default/rootfs/etc"
+BUILD_ETC="$PX4_PATH/build/px4_sitl_default/etc"
+if [ -d "$ROOTFS_ETC" ] && [ ! -L "$ROOTFS_ETC" ]; then
+    echo "Healing rootfs/etc directory (replacing real directory with symlink)..."
+    if [ -d "$ROOTFS_ETC/init.d-posix/airframes" ]; then
+        mkdir -p "$BUILD_ETC/init.d-posix/airframes"
+        cp -rn "$ROOTFS_ETC/init.d-posix/airframes"/* "$BUILD_ETC/init.d-posix/airframes/" 2>/dev/null || true
+    fi
+    rm -rf "$ROOTFS_ETC"
+fi
+
+if [ ! -e "$ROOTFS_ETC" ]; then
+    echo "Creating symlink for rootfs/etc..."
+    ln -sf "$BUILD_ETC" "$ROOTFS_ETC"
+fi
+
 # Auto-heal/setup custom PX4 airframe and symlinks if they are missing inside the container/host
 if [ "$PX4_SIM_MODEL" = "m4e" ]; then
-    PX4_PATH="$HOME/PX4-Autopilot"
     ROOTFS_AF="$PX4_PATH/build/px4_sitl_default/rootfs/etc/init.d-posix/airframes/4900_gz_m4e"
     NEED_BUILD=0; [ ! -f "$ROOTFS_AF" ] && NEED_BUILD=1
     # ALWAYS refresh the airframe from source so edits (rotor geometry, params)
@@ -192,8 +210,8 @@ if [ -z "$PX4_GZ_MODEL_POSE" ]; then
             *)           SPAWN_Z=1.5  ;;   # generic safe default
         esac
     fi
-    export PX4_GZ_MODEL_POSE="0,0,$SPAWN_Z"
-    echo "Spawn pose: 0,0,$SPAWN_Z  (ground-level for world '$PX4_GZ_WORLD')"
+    export PX4_GZ_MODEL_POSE="15.0,0.0,$SPAWN_Z"
+    echo "Spawn pose: 15.0,0.0,$SPAWN_Z  (ground-level for world '$PX4_GZ_WORLD')"
 fi
 export GZ_CONFIG_PATH="/usr/share/gz:${GZ_CONFIG_PATH:-}"
 unset PX4_GZ_MODEL_NAME
@@ -268,7 +286,7 @@ $P set COM_ARM_WO_GPS 1 > /dev/null 2>&1 # arm without GPS lock
 # because the EKF rejects the simulated magnetometer. Force mag heading and skip
 # the field-strength gate so a yaw reference is available -> arming works.
 $P set EKF2_MAG_CHECK 0 > /dev/null 2>&1  # don't reject mag on field-strength mismatch
-$P set EKF2_MAG_TYPE  1 > /dev/null 2>&1  # use magnetometer for heading
+$P set EKF2_MAG_TYPE  2 > /dev/null 2>&1  # use magnetometer for heading
 $P set CBRK_SUPPLY_CHK 894281 > /dev/null 2>&1 # bypass power/battery check
 
 # 5. Wait for the simulator + sensors to come up (wait for the drone model to spawn in Gazebo)

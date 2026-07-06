@@ -21,7 +21,7 @@
       <velocity_decay />
 
       <visual name="base_link_visual">
-        <pose>0 0 0.025 0 0 3.141592654</pose>
+        <pose>0 0 0.025 0 0 -1.570796327</pose>
         <transparency>0</transparency>
         <geometry>
           <mesh>
@@ -423,7 +423,7 @@
     </joint>
 
 <link name="gimbal_mount">
-      <pose>0.01 -0.1215 0.05 0 0 -1.5708</pose>
+      <pose>0.1215 0.01 0.05 0 0 0</pose>
       <inertial>
         <mass>0.05</mass>
         <inertia>
@@ -440,13 +440,13 @@
     </joint>
 
     <link name="gimbal_yaw_link">
-      <pose>0.01 -0.1215 0.040 0 0 -1.5708</pose>
+      <pose>0.1215 0.01 0.040 0 0 0</pose>
       <inertial>
-        <mass>0.02</mass>
+        <mass>0.2</mass>
         <inertia>
-          <ixx>0.00005</ixx>
-          <iyy>0.00005</iyy>
-          <izz>0.00005</izz>
+          <ixx>0.0005</ixx>
+          <iyy>0.0005</iyy>
+          <izz>0.0005</izz>
         </inertia>
       </inertial>
     </link>
@@ -464,23 +464,24 @@
           <velocity>1.745</velocity>
         </limit>
         <dynamics>
-          <damping>0.3</damping>
+          <damping>2.0</damping>
+          <friction>0.2</friction>
         </dynamics>
       </axis>
     </joint>
 
     <link name="gimbal_roll_link">
-      <pose>0.01 -0.1215 0.025 0 0 -1.5708</pose>
+      <pose>0.1215 0.01 0.025 0 0 0</pose>
       <inertial>
-        <mass>0.02</mass>
+        <mass>0.2</mass>
         <inertia>
-          <ixx>0.00005</ixx>
-          <iyy>0.00005</iyy>
-          <izz>0.00005</izz>
+          <ixx>0.0005</ixx>
+          <iyy>0.0005</iyy>
+          <izz>0.0005</izz>
         </inertia>
       </inertial>
       <visual name="gimbal_joint_visual">
-        <pose>0 -0.011 0 0 0 -1.5708</pose>
+        <pose>0 -0.011 0 0 0 -1.570796327</pose>
         <transparency>0</transparency>
         <geometry>
           <mesh>
@@ -504,17 +505,18 @@
         <limit>
           <lower>-0.820305</lower>
           <upper>0.820305</upper>
-          <effort>5</effort>
+          <effort>10</effort>
           <velocity>1.745</velocity>
         </limit>
         <dynamics>
-          <damping>0.2</damping>
+          <damping>2.0</damping>
+          <friction>0.2</friction>
         </dynamics>
       </axis>
     </joint>
 
     <link name="camera_link">
-      <pose>0 -0.1215 0.02 0 0 -1.5708</pose>
+      <pose>0.1215 0 0.02 0 0 0</pose>
       <inertial>
         <mass>0.2</mass>
         <inertia>
@@ -525,7 +527,7 @@
       </inertial>
 
       <visual name="gimbal_visual">
-        <pose>0 0 0 0 0 -1.5708</pose>
+        <pose>0 0 0 0 0 -1.570796327</pose>
         <transparency>0</transparency>
         <geometry>
           <mesh>
@@ -542,13 +544,13 @@
       <sensor name="m4e_wide" type="camera">
         <pose>0 0 0 0 0 0</pose>
         <always_on>false</always_on>
-        <update_rate>15</update_rate>
+        <update_rate>60</update_rate>
         <topic>/drone/camera/wide/image_raw</topic>
         <camera>
           <horizontal_fov>1.4661</horizontal_fov>
           <image>
-            <width>640</width>
-            <height>480</height>
+            <width>1280</width>
+            <height>960</height>
             <format>R8G8B8</format>
           </image>
           <clip>
@@ -561,13 +563,13 @@
       <sensor name="m4e_medium_tele" type="camera">
         <pose>0 0 0 0 0 0</pose>
         <always_on>false</always_on>
-        <update_rate>15</update_rate>
+        <update_rate>60</update_rate>
         <topic>/drone/camera/medium_tele/image_raw</topic>
         <camera>
           <horizontal_fov>0.6109</horizontal_fov>
           <image>
-            <width>640</width>
-            <height>480</height>
+            <width>1280</width>
+            <height>960</height>
             <format>R8G8B8</format>
           </image>
           <clip>
@@ -580,13 +582,13 @@
      <sensor name="m4e_tele" type="camera">
         <pose>0 0 0 0 0 0</pose>
         <always_on>false</always_on>
-        <update_rate>15</update_rate>
+        <update_rate>60</update_rate>
         <topic>/drone/camera/tele/image_raw</topic>
         <camera>
           <horizontal_fov>0.2618</horizontal_fov>
           <image>
-            <width>640</width>
-            <height>480</height>
+            <width>1280</width>
+            <height>960</height>
             <format>R8G8B8</format>
           </image>
           <clip>
@@ -639,7 +641,8 @@
           <velocity>1.7453</velocity>
         </limit>
         <dynamics>
-          <damping>0.2</damping>
+          <damping>2.0</damping>
+          <friction>0.2</friction>
         </dynamics>
       </axis>
     </joint>
@@ -647,9 +650,9 @@
             name="gz::sim::systems::JointPositionController">
       <joint_name>gimbal_yaw_joint</joint_name>
       <topic>/drone/gimbal/cmd/pan</topic>
-      <p_gain>5</p_gain>
-      <i_gain>0.05</i_gain>
-      <d_gain>0.5</d_gain>
+      <p_gain>1.0</p_gain>
+      <i_gain>0.01</i_gain>
+      <d_gain>0.1</d_gain>
       <i_max>1</i_max>
       <i_min>-1</i_min>
       <cmd_max>5</cmd_max>
@@ -660,9 +663,9 @@
             name="gz::sim::systems::JointPositionController">
       <joint_name>gimbal_roll_joint</joint_name>
       <topic>/drone/gimbal/cmd/roll</topic>
-      <p_gain>10</p_gain>
-      <i_gain>0.1</i_gain>
-      <d_gain>1.5</d_gain>
+      <p_gain>2.0</p_gain>
+      <i_gain>0.02</i_gain>
+      <d_gain>0.3</d_gain>
       <i_max>1</i_max>
       <i_min>-1</i_min>
       <cmd_max>5</cmd_max>
@@ -673,9 +676,9 @@
             name="gz::sim::systems::JointPositionController">
       <joint_name>gimbal_tilt_joint</joint_name>
       <topic>/drone/gimbal/cmd/tilt</topic>
-      <p_gain>10</p_gain>
-      <i_gain>0.1</i_gain>
-      <d_gain>1.5</d_gain>
+      <p_gain>2.0</p_gain>
+      <i_gain>0.02</i_gain>
+      <d_gain>0.3</d_gain>
       <i_max>1</i_max>
       <i_min>-1</i_min>
       <cmd_max>10</cmd_max>
@@ -689,13 +692,15 @@
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
       <maxRotVelocity>1100</maxRotVelocity>
-      <motorConstant>8.54858e-06</motorConstant>
+      <motorConstant>1.2e-05</motorConstant>
       <momentConstant>0.016</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>0</motorNumber>
       <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
       <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
       <motorVelocityTopic>rotor_0_velocity</motorVelocityTopic>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      <motorType>velocity</motorType>
     </plugin>
 
     <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
@@ -705,13 +710,15 @@
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
       <maxRotVelocity>1100</maxRotVelocity>
-      <motorConstant>8.54858e-06</motorConstant>
+      <motorConstant>1.2e-05</motorConstant>
       <momentConstant>0.016</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>1</motorNumber>
       <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
       <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
       <motorVelocityTopic>rotor_1_velocity</motorVelocityTopic>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      <motorType>velocity</motorType>
     </plugin>
 
     <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
@@ -721,13 +728,15 @@
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
       <maxRotVelocity>1100</maxRotVelocity>
-      <motorConstant>8.54858e-06</motorConstant>
+      <motorConstant>1.2e-05</motorConstant>
       <momentConstant>0.016</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>2</motorNumber>
       <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
       <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
       <motorVelocityTopic>rotor_2_velocity</motorVelocityTopic>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      <motorType>velocity</motorType>
     </plugin>
 
     <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
@@ -737,13 +746,15 @@
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
       <maxRotVelocity>1100</maxRotVelocity>
-      <motorConstant>8.54858e-06</motorConstant>
+      <motorConstant>1.2e-05</motorConstant>
       <momentConstant>0.016</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>3</motorNumber>
       <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
       <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
       <motorVelocityTopic>rotor_3_velocity</motorVelocityTopic>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      <motorType>velocity</motorType>
     </plugin>
   </model>
 </sdf>
