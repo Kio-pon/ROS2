@@ -17,6 +17,7 @@
 # =============================================================================
 
 import math
+import os
 import threading
 import time
 
@@ -361,6 +362,10 @@ class DroneGUI:
         ttk.Button(r3, text="RTL",     command=self.on_rtl
                    ).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2)
 
+        r4 = ttk.Frame(f); r4.pack(fill=tk.X, padx=10, pady=2)
+        ttk.Button(r4, text="RESPAWN (reset pose + disarm)", command=self.on_respawn
+                   ).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2)
+
         tk.Label(f, text="Takeoff altitude (m)", bg=BG, fg=SUBTLE,
                  font=("Segoe UI", 9)).pack(anchor=tk.W, padx=10, pady=(6, 0))
         self.alt_slider = tk.Scale(f, from_=2, to=30, resolution=1,
@@ -465,7 +470,7 @@ class DroneGUI:
         f = self._section(parent, "Log")
         self.log_text = scrolledtext.ScrolledText(
             f, bg=PANEL, fg=GREEN, insertbackground=FG,
-            font=("Consolas", 9), height=7, bd=0)
+            font=("Consolas", 9), height=4, bd=0)
         self.log_text.pack(fill=tk.BOTH, expand=True, padx=6, pady=6)
 
     def _build_camera(self, parent):
@@ -504,8 +509,8 @@ class DroneGUI:
         grid = ttk.Frame(f); grid.pack(fill=tk.X, padx=10, pady=8)
         self.telem = {}
         items = [("Armed","—",RED),("Mode","—",FG),("Battery","— %",GREEN),
-                 ("X","0.00 m",FG),("Y","0.00 m",FG),("Z","0.00 m",FG),
-                 ("VX","0.00",FG),("VY","0.00",FG),("VZ","0.00",FG)]
+                 ("X","0.00 m",FG),("Y","0.00 m",FG),("Alt","0.00 m",GREEN),
+                 ("VX","0.00",FG),("VY","0.00",FG),("Climb","0.00",FG)]
         for i, (name, val, color) in enumerate(items):
             cell = ttk.Frame(grid)
             cell.grid(row=i//3, column=i%3, sticky="w", padx=8, pady=4)
@@ -552,6 +557,9 @@ class DroneGUI:
         self.ros_thread.start()
         self.log("ROS 2 node started — waiting for PX4 /fmu topics…")
         self._start_camera_switcher()
+        # Auto-start the wide feed so the camera shows without a manual click
+        # (gives camera_switcher + the lazy bridge a moment to come up first).
+        self.root.after(4000, lambda: self.select_lens("wide"))
 
     def _start_camera_switcher(self):
         try:
@@ -613,6 +621,29 @@ class DroneGUI:
     def on_kill(self):
         if messagebox.askyesno("Confirm KILL", "Cut motors immediately? The drone will fall."):
             self.node.kill(); self.log("⛔ KILL sent")
+
+    def on_respawn(self):
+        """Teleport the drone back to its spawn pose upright and disarm — the
+        quick recovery after a crash/flip. Uses Gazebo's world set_pose service."""
+        if self.node:
+            self.node.disarm()
+        world = os.environ.get("PX4_GZ_WORLD", "default")
+        parts = os.environ.get("PX4_GZ_MODEL_POSE", "0,0,2").split(",")
+        try:
+            x, y = float(parts[0]), float(parts[1])
+            z = float(parts[2]) if len(parts) > 2 else 2.0
+        except (ValueError, IndexError):
+            x, y, z = 0.0, 0.0, 2.0
+        req = (f'name: "m4e", position: {{x: {x}, y: {y}, z: {z}}}, '
+               f'orientation: {{x: 0, y: 0, z: 0, w: 1}}')
+        cmd = ["gz", "service", "-s", f"/world/{world}/set_pose",
+               "--reqtype", "gz.msgs.Pose", "--reptype", "gz.msgs.Boolean",
+               "--timeout", "3000", "--req", req]
+        try:
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            self.log(f"RESPAWN → m4e reset to ({x:.0f}, {y:.0f}, {z:.1f}) in '{world}', disarmed")
+        except Exception as e:
+            self.log(f"Respawn failed: {e}")
 
     # ---- pilot mode ---------------------------------------------------------
     def toggle_pilot(self):
@@ -720,10 +751,11 @@ class DroneGUI:
             self.telem["Battery"].config(text=f"{n.battery_percent:.0f} %")
             self.telem["X"].config(text=f"{n.x:.2f} m")
             self.telem["Y"].config(text=f"{n.y:.2f} m")
-            self.telem["Z"].config(text=f"{n.z:.2f} m")
+            # PX4 local Z is NED (down-positive) → altitude/climb are the negation
+            self.telem["Alt"].config(text=f"{-n.z:.2f} m")
             self.telem["VX"].config(text=f"{n.vx:.2f}")
             self.telem["VY"].config(text=f"{n.vy:.2f}")
-            self.telem["VZ"].config(text=f"{n.vz:.2f}")
+            self.telem["Climb"].config(text=f"{-n.vz:.2f}")
         self.root.after(200, self._poll_telemetry)
 
     # ---- shutdown -----------------------------------------------------------

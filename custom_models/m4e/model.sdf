@@ -541,85 +541,58 @@
 
       <sensor name="m4e_wide" type="camera">
         <pose>0 0 0 0 0 0</pose>
-        <always_on>true</always_on>
-        <update_rate>1</update_rate>
+        <always_on>false</always_on>
+        <update_rate>15</update_rate>
         <topic>/drone/camera/wide/image_raw</topic>
         <camera>
           <horizontal_fov>1.4661</horizontal_fov>
           <image>
-            <width>5280</width>
-            <height>3956</height>
+            <width>640</width>
+            <height>480</height>
             <format>R8G8B8</format>
           </image>
           <clip>
             <near>0.1</near>
             <far>500.0</far>
           </clip>
-          <lens>
-            <intrinsics>
-              <fx>2932.0</fx>
-              <fy>2955.9</fy>
-              <cx>2640.0</cx>
-              <cy>1978.0</cy>
-              <s>0.0</s>
-            </intrinsics>
-          </lens>
         </camera>
       </sensor>
 
       <sensor name="m4e_medium_tele" type="camera">
         <pose>0 0 0 0 0 0</pose>
-        <always_on>true</always_on>
-        <update_rate>1</update_rate>
+        <always_on>false</always_on>
+        <update_rate>15</update_rate>
         <topic>/drone/camera/medium_tele/image_raw</topic>
         <camera>
           <horizontal_fov>0.6109</horizontal_fov>
           <image>
-            <width>8064</width>
-            <height>6048</height>
+            <width>640</width>
+            <height>480</height>
             <format>R8G8B8</format>
           </image>
           <clip>
             <near>0.5</near>
             <far>1000.0</far>
           </clip>
-          <lens>
-            <intrinsics>
-              <fx>12787.9</fx>
-              <fy>12744.3</fy>
-              <cx>4032.0</cx>
-              <cy>3024.0</cy>
-              <s>0.0</s>
-            </intrinsics>
-          </lens>
         </camera>
       </sensor>
 
      <sensor name="m4e_tele" type="camera">
         <pose>0 0 0 0 0 0</pose>
-        <always_on>true</always_on>
-        <update_rate>1</update_rate>
+        <always_on>false</always_on>
+        <update_rate>15</update_rate>
         <topic>/drone/camera/tele/image_raw</topic>
         <camera>
           <horizontal_fov>0.2618</horizontal_fov>
           <image>
-            <width>8192</width>
-            <height>6144</height>
+            <width>640</width>
+            <height>480</height>
             <format>R8G8B8</format>
           </image>
           <clip>
             <near>1.0</near>
             <far>2000.0</far>
           </clip>
-          <lens>
-            <intrinsics>
-              <fx>31112.2</fx>
-              <fy>31520.8</fy>
-              <cx>4096.0</cx>
-              <cy>3072.0</cy>
-              <s>0.0</s>
-            </intrinsics>
-          </lens>
         </camera>
       </sensor>
 

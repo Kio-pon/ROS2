@@ -18,19 +18,19 @@ param set-default CA_ROTOR_COUNT 4
 
 # Asymmetric M4E arm geometry measured from mesh (Blender), ~440 mm diagonal
 param set-default CA_ROTOR0_PX  0.18056
-param set-default CA_ROTOR0_PY -0.11551
+param set-default CA_ROTOR0_PY 0.11551
 param set-default CA_ROTOR0_KM  0.05
 
 param set-default CA_ROTOR1_PX -0.15826
-param set-default CA_ROTOR1_PY  0.16500
+param set-default CA_ROTOR1_PY  -0.165
 param set-default CA_ROTOR1_KM  0.05
 
 param set-default CA_ROTOR2_PX  0.15826
-param set-default CA_ROTOR2_PY  0.16500
+param set-default CA_ROTOR2_PY  -0.165
 param set-default CA_ROTOR2_KM -0.05
 
 param set-default CA_ROTOR3_PX -0.18056
-param set-default CA_ROTOR3_PY -0.11551
+param set-default CA_ROTOR3_PY 0.11551
 param set-default CA_ROTOR3_KM -0.05
 
 # Gazebo ESC channel mapping

@@ -1,22 +1,45 @@
 <?xml version="1.0"?>
 <sdf version="1.9">
+  <!-- One 31 m span = TWO towers (local Z -18 and +13) + conductors, all in the
+       imported mesh. Visual stays the mesh; collision is explicit primitives so
+       the drone can fly THROUGH the lattice gaps and only hits the actual legs
+       and wires (the old whole-mesh collision became a convex-hull blob = a solid
+       invisible wall in gz/DART).
+
+       ponytail: leg/wire positions are approximated from the mesh vertex clusters
+       (towers X=+/-5 Y[0,14.4] at Z=-18 & +13; conductors at (+/-3.5,6) (+/-5,8.5)
+       (+/-3.5,10.5)). Nudge the numbers if a collision doesn't line up with the
+       visual. Wires are RIGID cylinders (drone crashes on contact) - true soft
+       "tangle" needs an articulated rope (a chain of links+joints per wire, heavy
+       and unstable on a weak PC); add that only if a mission actually needs it. -->
   <model name="transmission_tower">
     <static>true</static>
     <link name="link">
       <visual name="visual">
         <geometry>
-          <mesh>
-            <uri>model://transmission_tower/meshes/tower_model_3.dae</uri>
-          </mesh>
+          <mesh><uri>model://transmission_tower/meshes/tower_model_3.dae</uri></mesh>
         </geometry>
       </visual>
-      <collision name="collision">
-        <geometry>
-          <mesh>
-            <uri>model://transmission_tower/meshes/tower_model_3.dae</uri>
-          </mesh>
-        </geometry>
-      </collision>
+
+      <!-- ===== Tower legs: 4 vertical boxes per tower (gaps between = passable) ===== -->
+      <collision name="legA_pp"><pose>3.5 7.2 -16.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
+      <collision name="legA_pm"><pose>3.5 7.2 -19.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
+      <collision name="legA_mp"><pose>-3.5 7.2 -16.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
+      <collision name="legA_mm"><pose>-3.5 7.2 -19.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
+      <collision name="legB_pp"><pose>3.5 7.2 14.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
+      <collision name="legB_pm"><pose>3.5 7.2 11.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
+      <collision name="legB_mp"><pose>-3.5 7.2 14.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
+      <collision name="legB_mm"><pose>-3.5 7.2 11.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
+
+      <!-- ===== Conductors: thin cylinders spanning the two towers (Z -18..+13) ===== -->
+      <!-- cylinder axis is local Z = the span direction, so no rotation needed -->
+      <collision name="wire_L6"><pose>-3.5 6 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_R6"><pose>3.5 6 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_L8"><pose>-5 8.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_R8"><pose>5 8.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_L10"><pose>-3.5 10.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_R10"><pose>3.5 10.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_ground"><pose>0 13.8 -2.5 0 0 0</pose><geometry><cylinder><radius>0.1</radius><length>31</length></cylinder></geometry></collision>
     </link>
   </model>
 </sdf>

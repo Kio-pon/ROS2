@@ -940,10 +940,28 @@ class MissionControlApp:
         self._build_telemetry(left)
         self._build_manual(left)
         self._build_keyboard(left)
-        self._build_camera(left)
         self._build_qgc(left)
-        self._build_mission(right)
-        self._build_log(right)
+
+        # Right side: big camera feed on top; mission builder + log side-by-side below.
+        self._build_camera(right)
+        split = tk.Frame(right, bg=BG)
+        split.pack(side="top", fill="both", expand=True, pady=(6, 0))
+        mission_col = tk.Frame(split, bg=BG)
+        mission_col.pack(side="left", fill="both", expand=True, padx=(0, 3))
+        log_col = tk.Frame(split, bg=BG)
+        log_col.pack(side="left", fill="both", expand=True, padx=(3, 0))
+        self._build_mission(mission_col)
+        self._build_log(log_col)
+
+        # Show the feed immediately (and pick the wide lens for the m4e) so the
+        # camera isn't blank until the user hunts for the button.
+        self.root.after(3500, self._autostart_camera)
+
+    def _autostart_camera(self):
+        if not self.camera_active:
+            self._toggle_camera()
+        if os.environ.get("PX4_SIM_MODEL") == "m4e" and hasattr(self, "lens_buttons"):
+            self._select_lens("wide")
 
     def _build_telemetry(self, parent):
         sec = self._section(parent, "Telemetry")
@@ -1053,7 +1071,7 @@ class MissionControlApp:
 
     def _build_camera(self, parent):
         sec = self._section(parent, "Live Camera Feed")
-        sec.pack(fill="x", pady=4)
+        sec.pack(side="top", fill="both", expand=True, pady=4)
         
         row = tk.Frame(sec, bg=PANEL)
         row.pack(fill="x", padx=4, pady=(4, 2))
@@ -1178,7 +1196,7 @@ class MissionControlApp:
         self.camera_active = not self.camera_active
         if self.camera_active:
             self.cam_btn.config(text="Hide Camera", bg=WARN)
-            self.cam_canvas.pack(fill="x", padx=4, pady=(0, 4))
+            self.cam_canvas.pack(fill="both", expand=True, padx=4, pady=(0, 4))
             self.cam_canvas.config(height=200)
             self._update_camera_frame()
         else:
@@ -1205,13 +1223,18 @@ class MissionControlApp:
             if frame_data:
                 w, h, rgb = frame_data
                 img = PILImage.frombytes("RGB", (w, h), rgb)
-                target_w = 320
-                target_h = int(h * (target_w / w))
+                # Fit the frame to the (now big) canvas, preserving aspect ratio.
+                cw = self.cam_canvas.winfo_width()
+                ch = self.cam_canvas.winfo_height()
+                if cw < 50:  cw = 640      # before the widget is realized
+                if ch < 50:  ch = 480
+                scale = min(cw / w, ch / h)
+                target_w, target_h = max(1, int(w * scale)), max(1, int(h * scale))
                 img = img.resize((target_w, target_h))
 
-                self.cam_canvas.config(height=target_h)
                 self._photo_image = ImageTk.PhotoImage(img)
-                self.cam_canvas.create_image(target_w // 2, target_h // 2,
+                self.cam_canvas.delete("all")
+                self.cam_canvas.create_image(cw // 2, ch // 2,
                                              anchor="center", image=self._photo_image)
                 self.cam_lbl.config(text=f"Live ({w}x{h})", fg=OK)
             else:

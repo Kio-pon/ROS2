@@ -20,8 +20,8 @@ ENV_FILE = os.path.join(ROOT, ".drone_launch.env")
 
 # preset -> (shadows, physics_hz, solver_iters, cam_w, cam_h, cam_hz)
 PRESETS = {
-    "None (Full Quality)": (True, 1000, 50, 1280, 960, 30),
-    "Mild":                (False, 500, 30, 960, 720, 20),
+    "None (Full Quality)": (True, 1000, 50, 1280, 960, 60),
+    "Mild":                (False, 500, 30, 960, 720, 30),
     "Full (Potato PC)":    (False, 250, 16, 640, 480, 15),
 }
 NICE = {
@@ -32,7 +32,7 @@ NICE = {
     "powerline": "Powerline Transmission"
 }
 HZ_OPTS, IT_OPTS = [250, 500, 1000], [16, 30, 50]
-CAM_OPTS = [(640, 480, 15), (960, 720, 20), (1280, 960, 30)]
+CAM_OPTS = [(640, 480, 15), (960, 720, 30), (1280, 960, 60)]
 
 
 def discover_worlds():

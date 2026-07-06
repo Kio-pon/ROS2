@@ -133,15 +133,18 @@ MicroXRCEAgent udp4 -p 8888 > ~/dds_agent.log 2>&1 &
 # Auto-heal/setup custom PX4 airframe and symlinks if they are missing inside the container/host
 if [ "$PX4_SIM_MODEL" = "m4e" ]; then
     PX4_PATH="$HOME/PX4-Autopilot"
-    if [ ! -f "$PX4_PATH/ROMFS/px4fmu_common/init.d-posix/airframes/4900_gz_m4e" ] || [ ! -f "$PX4_PATH/build/px4_sitl_default/rootfs/etc/init.d-posix/airframes/4900_gz_m4e" ]; then
-        echo "Registering custom DJI Matrice 4E airframe inside PX4..."
-        mkdir -p "$PX4_PATH/ROMFS/px4fmu_common/init.d-posix/airframes"
-        cp "$WORKSPACE_DIR/custom_airframes/4900_gz_m4e" "$PX4_PATH/ROMFS/px4fmu_common/init.d-posix/airframes/4900_gz_m4e"
-        
-        mkdir -p "$PX4_PATH/build/px4_sitl_default/rootfs/etc/init.d-posix/airframes"
-        cp "$WORKSPACE_DIR/custom_airframes/4900_gz_m4e" "$PX4_PATH/build/px4_sitl_default/rootfs/etc/init.d-posix/airframes/4900_gz_m4e"
-        
-        echo "Compiling PX4 SITL target..."
+    ROOTFS_AF="$PX4_PATH/build/px4_sitl_default/rootfs/etc/init.d-posix/airframes/4900_gz_m4e"
+    NEED_BUILD=0; [ ! -f "$ROOTFS_AF" ] && NEED_BUILD=1
+    # ALWAYS refresh the airframe from source so edits (rotor geometry, params)
+    # actually reach the running PX4 - the old "copy only if missing" skipped
+    # updates and left a stale airframe in rootfs. Copying into rootfs is what
+    # PX4 reads at startup, so no rebuild is needed for a param change.
+    echo "Staging DJI Matrice 4E airframe inside PX4..."
+    mkdir -p "$PX4_PATH/ROMFS/px4fmu_common/init.d-posix/airframes" "$(dirname "$ROOTFS_AF")"
+    cp "$WORKSPACE_DIR/custom_airframes/4900_gz_m4e" "$PX4_PATH/ROMFS/px4fmu_common/init.d-posix/airframes/4900_gz_m4e"
+    cp "$WORKSPACE_DIR/custom_airframes/4900_gz_m4e" "$ROOTFS_AF"
+    if [ "$NEED_BUILD" -eq 1 ]; then
+        echo "First-time airframe registration — compiling PX4 SITL target..."
         (cd "$PX4_PATH" && make px4_sitl_default)
     fi
 
@@ -149,6 +152,14 @@ if [ "$PX4_SIM_MODEL" = "m4e" ]; then
         echo "Creating DJI model symlink inside PX4..."
         mkdir -p "$PX4_PATH/Tools/simulation/gz/models"
         ln -sf "$WORKSPACE_DIR/custom_models/m4e" "$PX4_PATH/Tools/simulation/gz/models/m4e"
+    fi
+
+    # Camera quality/fps from the launcher preset (potato 640x480@15 / mild
+    # 960x720@30 / full 1280x960@60). Only the 3 camera sensors are patched; the
+    # cams are always_on=false + lazy-bridged, so gz renders only the ONE feed
+    # mission_control is actually viewing (one camera on, the others idle).
+    if [ -f "$WORKSPACE_DIR/tools/patch_m4e_cams.py" ]; then
+        python3 "$WORKSPACE_DIR/tools/patch_m4e_cams.py" "${CAM_W:-1280}" "${CAM_H:-960}" "${CAM_HZ:-30}"
     fi
 fi
 

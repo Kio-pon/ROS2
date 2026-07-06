@@ -109,11 +109,14 @@
     </spherical_coordinates>
 
     <!-- Transmission tower -->
+    <!-- One span (2 towers + conductors). rotate +90deg about X to stand the
+         Y-up mesh; base sits at z=0. Duplicate with the span offset along Y
+         (~31 m) for a longer corridor. (<scale> is not valid in <include> and
+         was being ignored - removed.) -->
     <include>
       <uri>model://transmission_tower</uri>
       <name>tower_1</name>
       <pose>20 0 0 1.5708 0 0</pose>
-      <scale>3 3 3</scale>
     </include>
 
   </world>
