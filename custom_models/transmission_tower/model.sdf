@@ -21,11 +21,12 @@
         </geometry>
       </visual>
 
+      <!-- Exact bounding boxes derived from the mesh height bands (prevents OBJ crashing) -->
       <!-- Exact mesh collision mapping to the visual model -->
       <collision name="collision">
         <geometry>
           <mesh>
-            <uri>model://transmission_tower/meshes/tower_model_3.dae</uri>
+            <uri>model://transmission_tower/meshes/tower_collision.stl</uri>
           </mesh>
         </geometry>
       </collision>
