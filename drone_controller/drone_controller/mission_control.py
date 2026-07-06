@@ -1365,19 +1365,28 @@ class MissionControlApp:
 
     # ---- Manual command helpers ---------------------------------------------
     def _cmd_arm(self):
-        self.node.set_position(self.node.x, self.node.y, self.node.z, self.node.heading)
-        self.node.engage_offboard()
-        self.root.after(400, self.node.arm)
+        # PX4 requires ~1 s of continuous setpoint streaming before it will
+        # accept the OFFBOARD mode switch.  The old code engaged offboard
+        # immediately (0 ms after starting the stream) which PX4 silently
+        # rejected, so the arm command had no effect.
+        n = self.node
+        n.set_position(n.x, n.y, n.z, n.heading)          # start the setpoint stream
+        self.root.after(1200, n.engage_offboard)            # switch to OFFBOARD after 1.2 s
+        self.root.after(1500, n.arm)                        # arm 300 ms after OFFBOARD request
 
     def _cmd_takeoff(self):
         n = self.node
-        n.set_position(n.x, n.y, n.z, n.heading)
-        n.engage_offboard()
+        n.set_position(n.x, n.y, n.z, n.heading)          # start the setpoint stream
+
+        def _engage():
+            n.engage_offboard()
 
         def _arm_then_climb():
             n.arm()
             self.root.after(600, lambda: n.set_position(n.x, n.y, -2.5, n.heading))
-        self.root.after(400, _arm_then_climb)
+
+        self.root.after(1200, _engage)                      # OFFBOARD after 1.2 s of streaming
+        self.root.after(1500, _arm_then_climb)              # arm + climb 300 ms later
 
     def _cmd_land(self):
         self.node.land()
