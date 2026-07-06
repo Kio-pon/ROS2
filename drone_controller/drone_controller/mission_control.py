@@ -1415,8 +1415,8 @@ class MissionControlApp:
             self.log("Keyboard control ON - arming + OFFBOARD. Click the window, then fly.")
             n = self.node
             n.set_velocity(0.0, 0.0, 0.0, 0.0)
-            n.engage_offboard()
-            self.root.after(400, n.arm)
+            self.root.after(1200, n.engage_offboard)
+            self.root.after(1500, n.arm)
             self.root.bind("<KeyPress>", self._on_key_press)
             self.root.bind("<KeyRelease>", self._on_key_release)
             self.root.focus_set()
