@@ -598,7 +598,16 @@ class DroneGUI:
             messagebox.showerror("QGC Error", str(e))
 
     # ---- flight commands ----------------------------------------------------
-    def on_arm(self):      self.node.arm();            self.log("ARM sent")
+    def on_arm(self):
+        n = self.node
+        # Start the setpoint stream so PX4 sees offboard heartbeats
+        n.hold_x, n.hold_y, n.hold_z = n.x, n.y, n.z
+        n.hold_yaw = n.heading
+        n.control_mode = "position"
+        n.offboard_active = True
+        self.log("Streaming setpoints…")
+        self.root.after(1200, lambda: (n.engage_offboard(), self.log("OFFBOARD engaged")))
+        self.root.after(1500, lambda: (n.arm(), self.log("ARM sent")))
     def on_disarm(self):   self.node.disarm();         self.log("DISARM sent")
     def on_land(self):
         if self.pilot_on: self._stop_pilot()
@@ -617,7 +626,8 @@ class DroneGUI:
         n.control_mode = "position"
         n.offboard_active = True
         self.log(f"Streaming setpoints for takeoff to {alt:.0f} m...")
-        self.root.after(500, lambda: (n.engage_offboard(), n.arm(), self.log("TAKEOFF: Offboard engaged + ARMED")))
+        self.root.after(1200, lambda: (n.engage_offboard(), self.log("TAKEOFF: Offboard engaged")))
+        self.root.after(1500, lambda: (n.arm(), self.log("TAKEOFF: ARMED")))
     def on_kill(self):
         if messagebox.askyesno("Confirm KILL", "Cut motors immediately? The drone will fall."):
             self.node.kill(); self.log("⛔ KILL sent")

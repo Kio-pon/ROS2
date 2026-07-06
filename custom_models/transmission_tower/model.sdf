@@ -21,25 +21,36 @@
         </geometry>
       </visual>
 
-      <!-- ===== Tower legs: 4 vertical boxes per tower (gaps between = passable) ===== -->
-      <collision name="legA_pp"><pose>3.5 7.2 -16.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
-      <collision name="legA_pm"><pose>3.5 7.2 -19.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
-      <collision name="legA_mp"><pose>-3.5 7.2 -16.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
-      <collision name="legA_mm"><pose>-3.5 7.2 -19.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
-      <collision name="legB_pp"><pose>3.5 7.2 14.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
-      <collision name="legB_pm"><pose>3.5 7.2 11.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
-      <collision name="legB_mp"><pose>-3.5 7.2 14.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
-      <collision name="legB_mm"><pose>-3.5 7.2 11.5 0 0 0</pose><geometry><box><size>0.6 14.4 0.6</size></box></geometry></collision>
+      <!-- ===== Tower structural collisions: Central mast and cross-arms ===== -->
+      <!-- Tower A (Z ~ -18) -->
+      <collision name="towerA_mast">
+        <pose>0 7.2 -18.0 0 0 0</pose>
+        <geometry><box><size>2.6 14.4 2.6</size></box></geometry>
+      </collision>
+      <collision name="towerA_arms">
+        <pose>0 10.0 -18.0 0 0 0</pose>
+        <geometry><box><size>10.0 8.0 2.6</size></box></geometry>
+      </collision>
+
+      <!-- Tower B (Z ~ +13) -->
+      <collision name="towerB_mast">
+        <pose>0 7.2 13.0 0 0 0</pose>
+        <geometry><box><size>2.6 14.4 2.6</size></box></geometry>
+      </collision>
+      <collision name="towerB_arms">
+        <pose>0 10.0 13.0 0 0 0</pose>
+        <geometry><box><size>10.0 8.0 2.6</size></box></geometry>
+      </collision>
 
       <!-- ===== Conductors: thin cylinders spanning the two towers (Z -18..+13) ===== -->
       <!-- cylinder axis is local Z = the span direction, so no rotation needed -->
-      <collision name="wire_L6"><pose>-3.5 6 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
-      <collision name="wire_R6"><pose>3.5 6 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
-      <collision name="wire_L8"><pose>-5 8.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
-      <collision name="wire_R8"><pose>5 8.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
-      <collision name="wire_L10"><pose>-3.5 10.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
-      <collision name="wire_R10"><pose>3.5 10.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.12</radius><length>31</length></cylinder></geometry></collision>
-      <collision name="wire_ground"><pose>0 13.8 -2.5 0 0 0</pose><geometry><cylinder><radius>0.1</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_L6"><pose>-3.5 6 -2.5 0 0 0</pose><geometry><cylinder><radius>0.2</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_R6"><pose>3.5 6 -2.5 0 0 0</pose><geometry><cylinder><radius>0.2</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_L8"><pose>-5 8.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.2</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_R8"><pose>5 8.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.2</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_L10"><pose>-3.5 10.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.2</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_R10"><pose>3.5 10.5 -2.5 0 0 0</pose><geometry><cylinder><radius>0.2</radius><length>31</length></cylinder></geometry></collision>
+      <collision name="wire_ground"><pose>0 13.8 -2.5 0 0 0</pose><geometry><cylinder><radius>0.2</radius><length>31</length></cylinder></geometry></collision>
     </link>
   </model>
 </sdf>
