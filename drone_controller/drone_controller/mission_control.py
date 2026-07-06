@@ -1046,7 +1046,7 @@ class MissionControlApp:
             cmd = [
                 "gz", "topic", "-t", "/gui/track",
                 "-m", "gz.msgs.CameraTrack",
-                "-p", "track_mode: NONE"
+                "-p", "track_mode: 0"
             ]
             self.cam_follow_btn.config(text="Camera Track: OFF (Free Movement)", bg="#45475a", activebackground="#45475a")
             self.log("Disabling Gazebo camera follow (free movement active)...")

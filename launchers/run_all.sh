@@ -210,8 +210,8 @@ if [ -z "$PX4_GZ_MODEL_POSE" ]; then
             *)           SPAWN_Z=1.5  ;;   # generic safe default
         esac
     fi
-    export PX4_GZ_MODEL_POSE="15.0,0.0,$SPAWN_Z"
-    echo "Spawn pose: 15.0,0.0,$SPAWN_Z  (ground-level for world '$PX4_GZ_WORLD')"
+    export PX4_GZ_MODEL_POSE="-10.0,0.0,$SPAWN_Z"
+    echo "Spawn pose: -10.0,0.0,$SPAWN_Z  (ground-level for world '$PX4_GZ_WORLD')"
 fi
 export GZ_CONFIG_PATH="/usr/share/gz:${GZ_CONFIG_PATH:-}"
 unset PX4_GZ_MODEL_NAME
